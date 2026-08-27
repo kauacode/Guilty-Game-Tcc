@@ -2536,6 +2536,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bca3dd00c7856e048b9a8d4d728ca178, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+  minInitialDelay: 5
+  maxInitialDelay: 10
   minIdleSeconds: 15
   maxIdleSeconds: 45
   minBurstDuration: 0.5

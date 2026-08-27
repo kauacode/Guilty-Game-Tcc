@@ -3,13 +3,19 @@ using UnityEngine;
 
 /// <summary>
 /// Simula uma lâmpada fluorescente velha e defeituosa.
-/// Aguarda um intervalo aleatório, depois dispara um burst de
-/// piscadas irregulares antes de retornar ao estado normal.
+/// Fase 1: aguarda um delay inicial curto e dispara o primeiro burst de
+/// apresentação para sinalizar ao jogador que o ambiente é instável.
+/// Fase 2: entra no loop principal com intervalos longos e aleatórios.
 /// </summary>
 [RequireComponent(typeof(Light))]
 public class InterrogationLightFlicker : MonoBehaviour
 {
-    // ── Intervalo de espera entre falhas ─────────────────────────────────────
+    // ── Delay inicial (antes do primeiro burst de apresentação) ───────────────
+    [Header("Delay Inicial")]
+    [SerializeField, Min(0f)] private float minInitialDelay = 5f;
+    [SerializeField, Min(0f)] private float maxInitialDelay = 10f;
+
+    // ── Intervalo de espera entre falhas (loop principal) ─────────────────────
     [Header("Intervalo entre Falhas")]
     [SerializeField, Min(0f)] private float minIdleSeconds = 15f;
     [SerializeField, Min(0f)] private float maxIdleSeconds = 45f;
@@ -90,12 +96,17 @@ public class InterrogationLightFlicker : MonoBehaviour
 
     private IEnumerator FlickerLoop()
     {
+        // ── Fase 1: burst de apresentação ─────────────────────────────────────
+        // Dispara rapidamente para sinalizar ao jogador que o ambiente é instável.
+        float initialDelay = Random.Range(minInitialDelay, maxInitialDelay);
+        yield return new WaitForSeconds(initialDelay);
+        yield return StartCoroutine(ExecuteFlickerBurst());
+
+        // ── Fase 2: loop principal com intervalos longos ───────────────────────
         while (true)
         {
-            // Aguarda um tempo aleatório antes da próxima falha.
             float idleTime = Random.Range(minIdleSeconds, maxIdleSeconds);
             yield return new WaitForSeconds(idleTime);
-
             yield return StartCoroutine(ExecuteFlickerBurst());
         }
     }
