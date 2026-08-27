@@ -991,7 +991,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.9989728, z: -0.045314435, w: 0}
-  m_LocalPosition: {x: 0, y: 1.15, z: 0.85}
+  m_LocalPosition: {x: 0, y: 1.15, z: 0.70}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1056,7 +1056,7 @@ MonoBehaviour:
   sensitivity: 120
   smoothness: 8
   pitchMin: -45
-  pitchMax: 65
+  pitchMax: 55
   yawMin: -60
   yawMax: 60
 --- !u!1 &410087039
