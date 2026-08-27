@@ -172,8 +172,14 @@ public class CigaretteSmokeVFX : MonoBehaviour
             if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
             if (mat.HasProperty("_ZWrite"))   mat.SetFloat("_ZWrite", 0f);
             if (mat.HasProperty("_AlphaClip")) mat.SetFloat("_AlphaClip", 0f);
+            // Apenas a keyword de superfície transparente — NÃO ativar
+            // _ALPHAPREMULTIPLY_ON aqui: essa keyword é exclusiva do modo
+            // Blend=Premultiply (1). Com Blend=Alpha (0) ela faz o shader
+            // premultiplicar a cor por um alfa que já foi tratado pelo
+            // blend state, anulando a saída — resultado: partícula invisível.
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            mat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.DisableKeyword("_ALPHAMODULATE_ON");
         }
         else if (mat.HasProperty("_Mode"))
         {
