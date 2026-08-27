@@ -19,7 +19,7 @@ public class PlayerCameraLook : MonoBehaviour
 
     [Header("Limites verticais (graus)")]
     [SerializeField] private float pitchMin = -45f;   // olhar para cima
-    [SerializeField] private float pitchMax =  30f;   // olhar para baixo (colo)
+    [SerializeField] private float pitchMax =  55f;   // olhar para baixo (colo / mesa)
 
     [Header("Limites horizontais (graus)")]
     [SerializeField] private float yawMin = -60f;
