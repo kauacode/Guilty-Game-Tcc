@@ -1056,7 +1056,7 @@ MonoBehaviour:
   sensitivity: 120
   smoothness: 8
   pitchMin: -45
-  pitchMax: 30
+  pitchMax: 55
   yawMin: -60
   yawMax: 60
 --- !u!1 &410087039
