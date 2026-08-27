@@ -15,7 +15,10 @@ public class UIController : MonoBehaviour
     [Header("Elementos de Output")]
     [SerializeField] private TMP_Text detectiveText;
     [SerializeField] private TMP_Text statusText;
-    [SerializeField] private Slider suspicionSlider;
+
+    [Header("HUD — Nível de Suspeita")]
+    [Tooltip("Image com Image Type = Filled / Fill Method = Horizontal. Substitui o Slider padrão por uma barra fina no topo da tela.")]
+    [SerializeField] private Image suspicionFillImage;
 
     [Header("Feedback de Loading")]
     [SerializeField] private GameObject loadingIndicator;
@@ -43,6 +46,9 @@ public class UIController : MonoBehaviour
         detectiveText.text = "Detetive Marcos Silva está esperando seu depoimento.\n\n" +
                              "Onde você estava na noite do dia 14 de março?";
         UpdateStatusText();
+
+        if (suspicionFillImage != null)
+            suspicionFillImage.fillAmount = 0f;
     }
 
     private void OnDestroy()
@@ -90,9 +96,9 @@ public class UIController : MonoBehaviour
         // Atualiza o texto do detetive
         detectiveText.text = $"<b>Turno {response.id_turno} — Detetive Silva:</b>\n\n{response.texto_detetive}";
 
-        // Atualiza barra de suspeita
-        if (suspicionSlider != null)
-            suspicionSlider.value = response.status_investigacao.nivel_suspeita;
+        // Atualiza a barra de suspeita (HUD)
+        if (suspicionFillImage != null)
+            suspicionFillImage.fillAmount = Mathf.Clamp01(response.status_investigacao.nivel_suspeita / 100f);
 
         // Atualiza texto de status
         UpdateStatusText(response);

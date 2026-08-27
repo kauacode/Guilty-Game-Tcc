@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -21,8 +22,18 @@ public class InterrogationUIToggle : MonoBehaviour
     /// </summary>
     public static event Action<bool> OnMenuToggled;
 
+    private const string PromptClosed = "[TAB] Abrir Interrogatório";
+    private const string PromptOpen   = "[TAB] Fechar / [ENTER] Enviar";
+
     [Header("Painel a alternar")]
+    [Tooltip("GameObject raiz do painel de chat. É desativado (SetActive(false)) 100% ao fechar — sem resíduo transparente, sem custo de raycast/render.")]
+    [SerializeField] private GameObject chatPanelRoot;
+    [Tooltip("CanvasGroup do próprio chatPanelRoot, usado apenas para o fade suave de abertura/fechamento.")]
     [SerializeField] private CanvasGroup canvasGroup;
+
+    [Header("HUD")]
+    [Tooltip("Texto de instruções no canto da tela, atualizado dinamicamente conforme o painel abre/fecha.")]
+    [SerializeField] private TMP_Text inputPromptText;
 
     [Header("Configuração")]
     [SerializeField] private float fadeDuration = 0.2f;
@@ -72,17 +83,34 @@ public class InterrogationUIToggle : MonoBehaviour
         isVisible = visible;
         targetAlpha = visible ? 1f : 0f;
 
+        // Ao abrir, reativa o GameObject ANTES do fade — precisa estar
+        // ativo para renderizar e receber input durante a transição.
+        if (visible && chatPanelRoot != null && !chatPanelRoot.activeSelf)
+        {
+            chatPanelRoot.SetActive(true);
+        }
+
         canvasGroup.interactable = visible;
         canvasGroup.blocksRaycasts = visible;
 
         Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = visible;
 
+        if (inputPromptText != null)
+        {
+            inputPromptText.text = visible ? PromptOpen : PromptClosed;
+        }
+
         OnMenuToggled?.Invoke(visible);
 
         if (instant)
         {
             canvasGroup.alpha = targetAlpha;
+
+            if (!visible && chatPanelRoot != null)
+            {
+                chatPanelRoot.SetActive(false);
+            }
         }
     }
 
@@ -91,6 +119,15 @@ public class InterrogationUIToggle : MonoBehaviour
         if (!Mathf.Approximately(canvasGroup.alpha, targetAlpha))
         {
             canvasGroup.alpha = Mathf.SmoothDamp(canvasGroup.alpha, targetAlpha, ref fadeVelocity, fadeDuration);
+            return;
+        }
+
+        // Fade de saída concluído: desativa o GameObject por completo.
+        // Isso garante zero resíduo transparente e remove o painel do
+        // grafo de render/raycast enquanto estiver fechado.
+        if (!isVisible && chatPanelRoot != null && chatPanelRoot.activeSelf)
+        {
+            chatPanelRoot.SetActive(false);
         }
     }
 }
