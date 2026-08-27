@@ -136,11 +136,14 @@ public class UIController : MonoBehaviour
         if (loadingIndicator != null)
             loadingIndicator.SetActive(isLoading);
 
-        // Bloqueia ou desbloqueia toda a UI
+        // Bloqueia a UI durante o loading. NÃO mexe em canvasGroup.alpha:
+        // esse CanvasGroup também é usado por InterrogationUIToggle para o
+        // fade de abrir/fechar o painel, e as duas lógicas escrevendo no
+        // mesmo alpha entravam em conflito (a UI ficava presa num estado
+        // intermediário em vez de fechar 100%).
         if (canvasGroup != null)
         {
             canvasGroup.interactable = !isLoading;
-            canvasGroup.alpha = isLoading ? 0.7f : 1f;
         }
 
         sendButton.interactable = !isLoading;
