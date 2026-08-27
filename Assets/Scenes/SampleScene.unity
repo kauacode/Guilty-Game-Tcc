@@ -2922,6 +2922,307 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3100001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3100002}
+  - component: {fileID: 3100003}
+  - component: {fileID: 3100004}
+  - component: {fileID: 3100005}
+  m_Layer: 0
+  m_Name: SmokeEmitter_Cigarette
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3100002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.05, y: 0.77, z: -0.321}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!198 &3100003
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100001}
+  serializedVersion: 6
+  lengthInSec: 5
+  simulationSpeed: 1
+  stopAction: 0
+  cullingMode: 0
+  ringBufferLoopRange: {x: 0, y: 1}
+  ringBufferMode: 0
+  InitialModule:
+    serializedVersion: 3
+    enabled: 1
+    startLifetime:
+      serializedVersion: 2
+      minMaxState: 3
+      scalar: 5
+      minScalar: 3
+    startSpeed:
+      serializedVersion: 2
+      minMaxState: 3
+      scalar: 0.35
+      minScalar: 0.15
+    startColor:
+      serializedVersion: 2
+      minMaxState: 1
+      minColor: {r: 0.85, g: 0.85, b: 0.85, a: 0}
+      maxColor: {r: 0.85, g: 0.85, b: 0.85, a: 0}
+    gravityModifier:
+      serializedVersion: 2
+      minMaxState: 0
+      scalar: -0.015
+      minScalar: 0
+    startSize:
+      serializedVersion: 2
+      minMaxState: 0
+      scalar: 0.015
+      minScalar: 0
+    startRotation:
+      serializedVersion: 2
+      minMaxState: 3
+      scalar: 3.1415927
+      minScalar: -3.1415927
+    startRotation3D: 0
+    startDelay:
+      serializedVersion: 2
+      minMaxState: 0
+      scalar: 0
+      minScalar: 0
+    particleCountMode: 0
+    maxNumParticles: 50
+    cullingMode: 0
+    emitterVelocityMode: 0
+    stopAction: 0
+    looping: 1
+    prewarm: 0
+    playOnAwake: 1
+    useUnscaledTime: 0
+    autoRandomSeed: 1
+    randomSeed: 0
+    simulateInWorldSpace: 1
+    ringBufferLoopRange: {x: 0, y: 1}
+    ringBufferMode: 0
+  EmissionModule:
+    enabled: 1
+    serializedVersion: 4
+    rateOverTime:
+      serializedVersion: 2
+      minMaxState: 0
+      scalar: 3
+      minScalar: 0
+    rateOverDistance:
+      serializedVersion: 2
+      minMaxState: 0
+      scalar: 0
+      minScalar: 0
+    cnt0: 30
+    cnt1: 30
+    cnt2: 30
+    cnt3: 30
+    cntmax0: 30
+    cntmax1: 30
+    cntmax2: 30
+    cntmax3: 30
+    time0: 0
+    time1: 0
+    time2: 0
+    time3: 0
+    m_BurstCount: 0
+    type0: 0
+    type1: 0
+    type2: 0
+    type3: 0
+  ShapeModule:
+    serializedVersion: 7
+    enabled: 1
+    shapeType: 7
+    radius: 0.001
+    angle: 3
+    length: 5
+    boxThickness: {x: 0, y: 0, z: 0}
+    radiusThickness: 1
+    donutRadius: 0.2
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: -90, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    placementMode: 0
+    m_Texture: {fileID: 0}
+    m_TextureClipChannel: 3
+    m_TextureClipThreshold: 0
+    m_TextureColorAffectsParticles: 1
+    m_TextureAlphaAffectsParticles: 1
+    m_TextureBilinearFiltering: 1
+    m_TextureUVChannel: 0
+    m_MeshShapeType: 0
+    m_Mesh: {fileID: 0}
+    m_MeshRenderer: {fileID: 0}
+    m_SkinnedMeshRenderer: {fileID: 0}
+    m_Sprite: {fileID: 0}
+    m_SpriteRenderer: {fileID: 0}
+    alignToDirection: 0
+    randomPositionAmount: 0
+    sphericalDirectionAmount: 0
+    randomDirectionAmount: 0
+  VelocityModule:
+    enabled: 0
+  ClampVelocityModule:
+    enabled: 0
+  InheritVelocityModule:
+    enabled: 0
+  LifetimeByEmitterSpeedModule:
+    enabled: 0
+  ForceModule:
+    enabled: 0
+  ColorModule:
+    enabled: 0
+  ColorBySpeedModule:
+    enabled: 0
+  SizeModule:
+    enabled: 0
+  SizeBySpeedModule:
+    enabled: 0
+  RotationModule:
+    enabled: 0
+  RotationBySpeedModule:
+    enabled: 0
+  UVModule:
+    serializedVersion: 2
+    enabled: 0
+  NoiseModule:
+    enabled: 0
+  ExternalForcesModule:
+    serializedVersion: 3
+    enabled: 0
+  CollisionModule:
+    enabled: 0
+  TriggerModule:
+    enabled: 0
+  SubModule:
+    enabled: 0
+  LightsModule:
+    enabled: 0
+  TrailModule:
+    enabled: 0
+  CustomDataModule:
+    enabled: 0
+--- !u!199 &3100004
+ParticleSystemRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100001}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 2
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  renderMode: 0
+  sortMode: 0
+  minParticleSize: 0
+  maxParticleSize: 0.5
+  cameraVelocityScale: 0
+  velocityScale: 0
+  lengthScale: 2
+  sortingFudge: 0
+  normalDirection: 1
+  stereoMultiplier: 1
+  renderAlignment: 0
+  flip: {x: 0, y: 0, z: 0}
+  allowRoll: 1
+  pivot: {x: 0, y: 0, z: 0}
+  useCustomVertexStreams: 0
+  useCustomTrailVertexStreams: 0
+  m_VertexStreams: []
+  m_TrailVertexStreams: []
+  m_MeshDistribution: 0
+  m_ActiveColorRole: 3
+  m_Mesh0: {fileID: 0}
+  m_Mesh1: {fileID: 0}
+  m_Mesh2: {fileID: 0}
+  m_Mesh3: {fileID: 0}
+  m_MeshWeighting0: 1
+  m_MeshWeighting1: 1
+  m_MeshWeighting2: 1
+  m_MeshWeighting3: 1
+  m_MaskInteraction: 0
+  m_EnableGPUInstancing: 0
+  m_ApplyActiveColorSpace: 1
+  m_TrailMaterial: {fileID: 0}
+  m_LineAlignment: 0
+--- !u!114 &3100005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3100001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e7d912a45f3b20987654321fedcba0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  emissionRate: 3
+  maxParticles: 50
+  lifetimeMin: 3
+  lifetimeMax: 5
+  startSpeedMin: 0.15
+  startSpeedMax: 0.35
+  startSize: 0.015
+  endSize: 0.22
+  peakAlpha: 0.15
+  noiseStrength: 0.04
+  noiseFrequency: 0.3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2935,4 +3236,5 @@ SceneRoots:
   - {fileID: 126551113}
   - {fileID: 1716926250}
   - {fileID: 3889280}
+  - {fileID: 3100002}
   - {fileID: 1998310159}
