@@ -114,13 +114,28 @@ public class InterrogationUIToggle : MonoBehaviour
         }
     }
 
+    // Mathf.Approximately(x, 0f) é traiçoeiro: a tolerância dele é relativa
+    // ao maior dos dois valores, então comparado contra exatamente 0 ela
+    // encolhe para praticamente nada. O SmoothDamp decai exponencialmente
+    // e pode levar vários segundos para satisfazer essa comparação —
+    // durante esse tempo o painel fica com uma transparência residual bem
+    // sutil só perceptível, mas visível. Por isso usamos um limiar próprio,
+    // bem folgado, só para decidir quando é seguro desativar o GameObject.
+    private const float AlphaSnapThreshold = 0.01f;
+
     private void Update()
     {
-        if (!Mathf.Approximately(canvasGroup.alpha, targetAlpha))
+        bool reachedTarget = Mathf.Abs(canvasGroup.alpha - targetAlpha) <= AlphaSnapThreshold;
+
+        if (!reachedTarget)
         {
             canvasGroup.alpha = Mathf.SmoothDamp(canvasGroup.alpha, targetAlpha, ref fadeVelocity, fadeDuration);
             return;
         }
+
+        // Fade concluído (dentro do limiar): trava o valor exato do alvo
+        // para não deixar nenhum resíduo de opacidade.
+        canvasGroup.alpha = targetAlpha;
 
         // Fade de saída concluído: desativa o GameObject por completo.
         // Isso garante zero resíduo transparente e remove o painel do

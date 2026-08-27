@@ -17,7 +17,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private TMP_Text statusText;
 
     [Header("HUD — Nível de Suspeita")]
-    [Tooltip("Image com Image Type = Filled / Fill Method = Horizontal. Substitui o Slider padrão por uma barra fina no topo da tela.")]
+    [Tooltip("Barra fina no topo da tela. Preenchida via RectTransform.anchorMax.x (0=vazia, 1=cheia) em vez de Image.fillAmount — evita depender de sprite/Image Type=Filled, que exige um sprite válido para funcionar.")]
     [SerializeField] private Image suspicionFillImage;
 
     [Header("Feedback de Loading")]
@@ -47,8 +47,7 @@ public class UIController : MonoBehaviour
                              "Onde você estava na noite do dia 14 de março?";
         UpdateStatusText();
 
-        if (suspicionFillImage != null)
-            suspicionFillImage.fillAmount = 0f;
+        SetSuspicionFillAmount(0f);
     }
 
     private void OnDestroy()
@@ -97,8 +96,7 @@ public class UIController : MonoBehaviour
         detectiveText.text = $"<b>Turno {response.id_turno} — Detetive Silva:</b>\n\n{response.texto_detetive}";
 
         // Atualiza a barra de suspeita (HUD)
-        if (suspicionFillImage != null)
-            suspicionFillImage.fillAmount = Mathf.Clamp01(response.status_investigacao.nivel_suspeita / 100f);
+        SetSuspicionFillAmount(response.status_investigacao.nivel_suspeita / 100f);
 
         // Atualiza texto de status
         UpdateStatusText(response);
@@ -147,6 +145,26 @@ public class UIController : MonoBehaviour
         }
 
         sendButton.interactable = !isLoading;
+    }
+
+    /// <summary>
+    /// Redimensiona a barra de suspeita alterando o anchorMax.x do seu
+    /// RectTransform (0 = vazia, 1 = cheia), em vez de usar Image.fillAmount
+    /// com Image Type = Filled. A barra fica ancorada à esquerda dentro do
+    /// trilho de fundo (anchorMin/Max locked em x=0), então mexer só no
+    /// anchorMax.x estica/encolhe a largura de forma puramente geométrica —
+    /// não depende de sprite, material ou shader nenhum, então não existe
+    /// combinação de configuração que a deixe "sempre cheia" por engano.
+    /// </summary>
+    private void SetSuspicionFillAmount(float normalizedValue)
+    {
+        if (suspicionFillImage == null)
+            return;
+
+        RectTransform rect = suspicionFillImage.rectTransform;
+        Vector2 anchorMax = rect.anchorMax;
+        anchorMax.x = Mathf.Clamp01(normalizedValue);
+        rect.anchorMax = anchorMax;
     }
 
     private void ApplyVisualFeedback(FeedbackVisual feedback)
