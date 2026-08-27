@@ -21,9 +21,6 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject loadingIndicator;
     [SerializeField] private CanvasGroup canvasGroup; // para bloquear UI
 
-    [Header("Cores de Feedback")]
-    [SerializeField] private Image backgroundPanel;
-
     private void Start()
     {
         // Conecta o botão ao método de envio
@@ -145,17 +142,9 @@ public class UIController : MonoBehaviour
 
     private void ApplyVisualFeedback(FeedbackVisual feedback)
     {
-        // Converte hex string "#FF4500" para Color do Unity
-        if (ColorUtility.TryParseHtmlString(feedback.cor_iluminacao, out Color newColor))
-        {
-            if (backgroundPanel != null)
-            {
-                // Aplica com transparência para não bloquear o texto
-                newColor.a = 0.3f;
-                backgroundPanel.color = newColor;
-            }
-        }
-
+        // O tingimento de cor por nível de suspeita foi migrado para
+        // SuspicionVisualFeedback.cs (Vignette no Global Volume), para
+        // continuar funcionando mesmo com este painel fechado.
         Debug.Log($"[UIController] Feedback Visual → Animação: {feedback.animacao_trigger} | BPM: {feedback.bpm_musica}");
     }
 
