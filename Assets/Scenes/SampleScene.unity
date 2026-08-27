@@ -915,6 +915,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1040,6 +1041,24 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6731700256779284f918f425cff97d0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraLook
+  sensitivity: 120
+  smoothness: 8
+  pitchMin: -45
+  pitchMax: 30
+  yawMin: -60
+  yawMax: 60
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -2468,6 +2487,7 @@ GameObject:
   - component: {fileID: 1716926250}
   - component: {fileID: 1716926249}
   - component: {fileID: 1716926248}
+  - component: {fileID: 1716926251}
   m_Layer: 0
   m_Name: Light_Interrogation_Main
   m_TagString: Untagged
@@ -2504,6 +2524,28 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &1716926251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1716926247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca3dd00c7856e048b9a8d4d728ca178, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  minIdleSeconds: 15
+  maxIdleSeconds: 45
+  minBurstDuration: 0.5
+  maxBurstDuration: 1
+  minFlickerStep: 0.02
+  maxFlickerStep: 0.1
+  normalIntensity: 8
+  dimIntensity: 0.08
+  partialIntensity: 0.55
+  flickerAudioSource: {fileID: 0}
 --- !u!108 &1716926249
 Light:
   m_ObjectHideFlags: 0
