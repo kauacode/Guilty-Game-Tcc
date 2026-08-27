@@ -3220,7 +3220,8 @@ MonoBehaviour:
   startSpeedMax: 0.35
   startSize: 0.07
   endSize: 0.35
-  peakAlpha: 0.15
+  smokeColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  peakAlpha: 0.35
   noiseStrength: 0.08
   noiseFrequency: 0.2
   rotationSpeedMaxDegrees: 20

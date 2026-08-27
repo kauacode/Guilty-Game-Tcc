@@ -20,8 +20,11 @@ public class CigaretteSmokeVFX : MonoBehaviour
     [SerializeField, Min(0f)] private float startSize = 0.07f;
     [SerializeField, Min(0f)] private float endSize   = 0.35f;
 
+    [Header("Cor")]
+    [SerializeField] private Color smokeColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
     [Header("Opacidade")]
-    [SerializeField, Range(0f, 1f)] private float peakAlpha = 0.15f;
+    [SerializeField, Range(0f, 1f)] private float peakAlpha = 0.35f;
 
     [Header("Ruído orgânico (ar quente)")]
     [SerializeField, Min(0f)] private float noiseStrength  = 0.08f;
@@ -59,7 +62,10 @@ public class CigaretteSmokeVFX : MonoBehaviour
         main.startLifetime   = new ParticleSystem.MinMaxCurve(lifetimeMin, lifetimeMax);
         main.startSpeed      = new ParticleSystem.MinMaxCurve(startSpeedMin, startSpeedMax);
         main.startSize       = startSize;
-        main.startColor      = new ParticleSystem.MinMaxGradient(new Color(0.85f, 0.85f, 0.85f, 0f));
+        // Alfa PRECISA ser 1 aqui: a cor final = startColor x colorOverLifetime.
+        // Se startColor.a fosse 0, o produto seria sempre 0 e a fumaça ficaria
+        // invisível mesmo com a curva de fade em colorOverLifetime correta.
+        main.startColor      = new ParticleSystem.MinMaxGradient(smokeColor);
         main.gravityModifier = -0.015f;
         // Rotação inicial aleatória (0-360°, expressa em radianos: -π a π)
         main.startRotation3D = false;
@@ -138,60 +144,20 @@ public class CigaretteSmokeVFX : MonoBehaviour
     }
 
     /// <summary>
-    /// Cria um material próprio (não depende de assets externos) com uma
-    /// textura de névoa radial gerada em runtime e blend alfa configurado
-    /// manualmente — funciona tanto em URP quanto no pipeline Built-in.
+    /// Cria um material próprio com uma textura de névoa radial gerada em
+    /// runtime. Usa o shader Sprites/Default: alfa-blend já vem configurado
+    /// de fábrica e é compatível tanto com URP quanto Built-in sem precisar
+    /// mexer manualmente em propriedades de blend (fonte dos bugs anteriores).
     /// </summary>
     private Material BuildSmokeMaterial()
     {
-        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-        bool isURP = shader != null;
-        if (!isURP)
-            shader = Shader.Find("Particles/Standard Unlit");
-        if (shader == null)
-            shader = Shader.Find("Sprites/Default"); // fallback universal
-
-        var mat = new Material(shader);
-        var softTexture = GenerateSoftParticleTexture();
-
-        if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", softTexture);
-        if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", softTexture);
-
-        ConfigureAlphaBlending(mat, isURP);
+        Shader shader = Shader.Find("Sprites/Default");
+        var mat = new Material(shader)
+        {
+            mainTexture = GenerateSoftParticleTexture(),
+            color       = Color.white, // a cor real vem do vértice (colorOverLifetime)
+        };
         return mat;
-    }
-
-    private void ConfigureAlphaBlending(Material mat, bool isURP)
-    {
-        if (isURP)
-        {
-            // Universal Render Pipeline/Particles/Unlit: Surface=Transparent, Blend=Alpha
-            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
-            if (mat.HasProperty("_Blend"))   mat.SetFloat("_Blend", 0f);
-            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-            if (mat.HasProperty("_ZWrite"))   mat.SetFloat("_ZWrite", 0f);
-            if (mat.HasProperty("_AlphaClip")) mat.SetFloat("_AlphaClip", 0f);
-            // Apenas a keyword de superfície transparente — NÃO ativar
-            // _ALPHAPREMULTIPLY_ON aqui: essa keyword é exclusiva do modo
-            // Blend=Premultiply (1). Com Blend=Alpha (0) ela faz o shader
-            // premultiplicar a cor por um alfa que já foi tratado pelo
-            // blend state, anulando a saída — resultado: partícula invisível.
-            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            mat.DisableKeyword("_ALPHAMODULATE_ON");
-        }
-        else if (mat.HasProperty("_Mode"))
-        {
-            // Particles/Standard Unlit (Built-in): Rendering Mode = Fade
-            mat.SetFloat("_Mode", 2f);
-            mat.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
-            mat.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
-            mat.SetInt("_ZWrite", 0);
-            mat.EnableKeyword("_ALPHABLEND_ON");
-        }
-
-        mat.renderQueue = (int)RenderQueue.Transparent;
     }
 
     /// <summary>
@@ -233,9 +199,8 @@ public class CigaretteSmokeVFX : MonoBehaviour
         g.SetKeys(
             colorKeys: new[]
             {
-                new GradientColorKey(new Color(0.82f, 0.82f, 0.82f), 0f),
-                new GradientColorKey(new Color(0.88f, 0.88f, 0.88f), 0.5f),
-                new GradientColorKey(new Color(0.94f, 0.94f, 0.94f), 1f),
+                new GradientColorKey(smokeColor, 0f),
+                new GradientColorKey(smokeColor, 1f),
             },
             alphaKeys: new[]
             {
