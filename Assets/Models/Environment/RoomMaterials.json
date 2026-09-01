@@ -1,0 +1,1111 @@
+{
+  "generated": "2026-09-01 09:25:49",
+  "materials": [
+    {
+      "name": "Casing_Plastic",
+      "baseColorSRGB": [
+        0.30353,
+        0.30552,
+        0.29749
+      ],
+      "metallic": 0.0,
+      "roughness": 0.55,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Casing_Plastic_Dark",
+      "baseColorSRGB": [
+        0.14283,
+        0.14283,
+        0.1517
+      ],
+      "metallic": 0.0,
+      "roughness": 0.48,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Dome_Glass",
+      "baseColorSRGB": [
+        0.18975,
+        0.19642,
+        0.20598
+      ],
+      "metallic": 0.0,
+      "roughness": 0.1,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Lens_Dark",
+      "baseColorSRGB": [
+        0.0861,
+        0.0861,
+        0.09985
+      ],
+      "metallic": 0.0,
+      "roughness": 0.12,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Ash",
+      "baseColorSRGB": [
+        0.22658,
+        0.22377,
+        0.21508
+      ],
+      "metallic": 0.0,
+      "roughness": 0.97,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Ashtray",
+      "baseColorSRGB": [
+        0.20285,
+        0.19642,
+        0.18975
+      ],
+      "metallic": 0.0,
+      "roughness": 0.25,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Baseboard",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Baseboard_BaseColor",
+      "normalMap": "T_Baseboard_Normal",
+      "metalSmoothMap": "T_Baseboard_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Ceiling",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.92,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Ceiling_BaseColor",
+      "normalMap": "T_Ceiling_Normal",
+      "metalSmoothMap": "T_Ceiling_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Chair",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.1,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Chair_BaseColor",
+      "normalMap": "T_Chair_Normal",
+      "metalSmoothMap": "T_Chair_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_CigFilter",
+      "baseColorSRGB": [
+        0.25279,
+        0.20907,
+        0.12835
+      ],
+      "metallic": 0.0,
+      "roughness": 0.86,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_CigPaper",
+      "baseColorSRGB": [
+        0.29749,
+        0.28707,
+        0.26479
+      ],
+      "metallic": 0.0,
+      "roughness": 0.9,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_ClockFace",
+      "baseColorSRGB": [
+        0.74838,
+        0.73864,
+        0.71182
+      ],
+      "metallic": 0.0,
+      "roughness": 0.62,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_ClockHands",
+      "baseColorSRGB": [
+        0.0861,
+        0.0861,
+        0.0932
+      ],
+      "metallic": 0.2,
+      "roughness": 0.48,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_ClockRim",
+      "baseColorSRGB": [
+        0.16008,
+        0.1641,
+        0.16802
+      ],
+      "metallic": 0.8,
+      "roughness": 0.42,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_ClockTick",
+      "baseColorSRGB": [
+        0.12316,
+        0.12316,
+        0.12835
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Coffee",
+      "baseColorSRGB": [
+        0.13817,
+        0.09985,
+        0.07016
+      ],
+      "metallic": 0.0,
+      "roughness": 0.11,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Conduit",
+      "baseColorSRGB": [
+        0.26007,
+        0.26712,
+        0.27619
+      ],
+      "metallic": 0.85,
+      "roughness": 0.44,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Door",
+      "baseColorSRGB": [
+        0.25279,
+        0.26007,
+        0.25279
+      ],
+      "metallic": 0.4,
+      "roughness": 0.55,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_DoorFrame",
+      "baseColorSRGB": [
+        0.23209,
+        0.23746,
+        0.23209
+      ],
+      "metallic": 0.55,
+      "roughness": 0.5,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_DoorGlass",
+      "baseColorSRGB": [
+        0.41002,
+        0.43663,
+        0.4492
+      ],
+      "metallic": 0.0,
+      "roughness": 0.55,
+      "emissionLinear": [
+        0.624,
+        0.768,
+        0.984
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_DoorHardware",
+      "baseColorSRGB": [
+        0.66519,
+        0.66892,
+        0.67632
+      ],
+      "metallic": 1.0,
+      "roughness": 0.28,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_FX_LightShaft",
+      "baseColorSRGB": [
+        1.0,
+        0.93574,
+        0.83228
+      ],
+      "metallic": 0.0,
+      "roughness": 1.0,
+      "emissionLinear": [
+        0.12,
+        0.1032,
+        0.0792
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": true,
+      "doubleSided": true,
+      "shaft": true,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Floor",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Floor_BaseColor",
+      "normalMap": "T_Floor_Normal",
+      "metalSmoothMap": "T_Floor_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Folder",
+      "baseColorSRGB": [
+        0.31711,
+        0.27619,
+        0.19312
+      ],
+      "metallic": 0.0,
+      "roughness": 0.88,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_LED_Red",
+      "baseColorSRGB": [
+        0.5371,
+        0.09985,
+        0.0861
+      ],
+      "metallic": 0.0,
+      "roughness": 0.3,
+      "emissionLinear": [
+        4.0,
+        0.24,
+        0.12
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Lamp",
+      "baseColorSRGB": [
+        0.17924,
+        0.19312,
+        0.18281
+      ],
+      "metallic": 0.75,
+      "roughness": 0.34,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_LampBulb",
+      "baseColorSRGB": [
+        1.0,
+        0.93574,
+        0.83228
+      ],
+      "metallic": 0.0,
+      "roughness": 0.15,
+      "emissionLinear": [
+        6.0,
+        4.8,
+        3.12
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_LampShadeInner",
+      "baseColorSRGB": [
+        0.79774,
+        0.77971,
+        0.74191
+      ],
+      "metallic": 0.0,
+      "roughness": 0.62,
+      "emissionLinear": [
+        1.6,
+        1.28,
+        0.88
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Mug",
+      "baseColorSRGB": [
+        0.35749,
+        0.3542,
+        0.3389
+      ],
+      "metallic": 0.0,
+      "roughness": 0.34,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Notebook_Chassis",
+      "baseColorSRGB": [
+        0.2478,
+        0.2478,
+        0.2478
+      ],
+      "metallic": 0.35,
+      "roughness": 0.75,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Notebook_Screen",
+      "baseColorSRGB": [
+        0.11774,
+        0.12316,
+        0.14283
+      ],
+      "metallic": 0.0,
+      "roughness": 0.3,
+      "emissionLinear": [
+        0.128,
+        0.288,
+        0.68
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Paper",
+      "baseColorSRGB": [
+        0.35749,
+        0.35087,
+        0.33539
+      ],
+      "metallic": 0.0,
+      "roughness": 0.88,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Pen",
+      "baseColorSRGB": [
+        0.12316,
+        0.12316,
+        0.13817
+      ],
+      "metallic": 0.1,
+      "roughness": 0.28,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Pillar",
+      "baseColorSRGB": [
+        0.30353,
+        0.30944,
+        0.29749
+      ],
+      "metallic": 0.0,
+      "roughness": 0.92,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_PoliceSteel",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 1.0,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_PoliceSteel_BaseColor",
+      "normalMap": "T_PoliceSteel_Normal",
+      "metalSmoothMap": "T_PoliceSteel_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Recorder",
+      "baseColorSRGB": [
+        0.12316,
+        0.12835,
+        0.13817
+      ],
+      "metallic": 0.15,
+      "roughness": 0.42,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_RecorderGrill",
+      "baseColorSRGB": [
+        0.17558,
+        0.17924,
+        0.18632
+      ],
+      "metallic": 0.6,
+      "roughness": 0.55,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_Table",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Table_BaseColor",
+      "normalMap": "T_Table_Normal",
+      "metalSmoothMap": "T_Table_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_TableFrame",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.8,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_TableFrame_BaseColor",
+      "normalMap": "T_TableFrame_Normal",
+      "metalSmoothMap": "T_TableFrame_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Mat_TwoWayMirror",
+      "baseColorSRGB": [
+        0.86504,
+        0.88342,
+        0.8677
+      ],
+      "metallic": 1.0,
+      "roughness": 0.05,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": true
+    },
+    {
+      "name": "Mat_Wall",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Wall_BaseColor",
+      "normalMap": "T_Wall_Normal",
+      "metalSmoothMap": "T_Wall_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "Material.001",
+      "baseColorSRGB": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.6,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "T_Detective_BaseColor",
+      "normalMap": "T_Detective_Normal",
+      "metalSmoothMap": "T_Detective_MetalSmooth",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "col_udud",
+      "baseColorSRGB": [
+        0.22658,
+        0.13817,
+        0.05071
+      ],
+      "metallic": 0.0,
+      "roughness": 0.88,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    },
+    {
+      "name": "col_udud_2",
+      "baseColorSRGB": [
+        0.29337,
+        0.28493,
+        0.26244
+      ],
+      "metallic": 0.0,
+      "roughness": 0.88,
+      "emissionLinear": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "albedoMap": "",
+      "normalMap": "",
+      "metalSmoothMap": "",
+      "transparent": false,
+      "doubleSided": false,
+      "shaft": false,
+      "mirror": false
+    }
+  ],
+  "lights": [
+    {
+      "name": "Light_Interrogation_Main",
+      "marker": "MARK_Light_Key",
+      "markerTarget": "MARK_Light_Key_T",
+      "type": "Spot",
+      "colorSRGB": [
+        1.0,
+        0.93334,
+        0.83228
+      ],
+      "intensity": 4.0,
+      "range": 6.0,
+      "spotAngle": 58.4,
+      "innerSpotAngle": 38.6,
+      "shadows": true,
+      "note": "Key quente sobre a mesa. Blender: 340 W, spot 58 graus, blend 0.34."
+    },
+    {
+      "name": "Light_Environment_Fill",
+      "marker": "MARK_Light_EnvFill",
+      "markerTarget": "",
+      "type": "Point",
+      "colorSRGB": [
+        0.61803,
+        0.67998,
+        0.77357
+      ],
+      "intensity": 0.45,
+      "range": 7.0,
+      "spotAngle": 0,
+      "innerSpotAngle": 0,
+      "shadows": false,
+      "note": "Era AREA 8 W no Blender. URP nao tem area light em tempo real -> virou Point."
+    },
+    {
+      "name": "Light_Fill_Detective",
+      "marker": "MARK_Light_WallWash",
+      "markerTarget": "",
+      "type": "Point",
+      "colorSRGB": [
+        0.66519,
+        0.76111,
+        0.87561
+      ],
+      "intensity": 0.3,
+      "range": 3.5,
+      "spotAngle": 0,
+      "innerSpotAngle": 0,
+      "shadows": false,
+      "note": "Wash frio na parede norte, separa o detetive do fundo."
+    },
+    {
+      "name": "Light_Mirror_Surveillance",
+      "marker": "MARK_Light_Mirror",
+      "markerTarget": "MARK_Light_Mirror_T",
+      "type": "Spot",
+      "colorSRGB": [
+        0.66519,
+        0.77357,
+        0.91627
+      ],
+      "intensity": 1.6,
+      "range": 5.5,
+      "spotAngle": 110.0,
+      "innerSpotAngle": 55.0,
+      "shadows": false,
+      "note": "Recorte frio vindo do espelho one-way. Era AREA 22 W."
+    },
+    {
+      "name": "Light_CorridorSpill",
+      "marker": "MARK_Light_Corridor",
+      "markerTarget": "MARK_Light_Corridor_T",
+      "type": "Spot",
+      "colorSRGB": [
+        0.70837,
+        0.79774,
+        0.91627
+      ],
+      "intensity": 0.8,
+      "range": 3.5,
+      "spotAngle": 90.0,
+      "innerSpotAngle": 40.0,
+      "shadows": false,
+      "note": "Luz de corredor pela janela da porta."
+    },
+    {
+      "name": "Light_REC",
+      "marker": "MARK_Light_REC",
+      "markerTarget": "",
+      "type": "Point",
+      "colorSRGB": [
+        1.0,
+        0.2478,
+        0.1517
+      ],
+      "intensity": 0.15,
+      "range": 0.6,
+      "spotAngle": 0,
+      "innerSpotAngle": 0,
+      "shadows": false,
+      "note": "LED de gravacao na camera dome."
+    },
+    {
+      "name": "Light_Bounce_Table",
+      "marker": "MARK_Light_Bounce",
+      "markerTarget": "MARK_Light_Bounce_T",
+      "type": "Spot",
+      "colorSRGB": [
+        1.0,
+        0.91627,
+        0.80947
+      ],
+      "intensity": 1.15,
+      "range": 2.2,
+      "spotAngle": 120.0,
+      "innerSpotAngle": 45.0,
+      "shadows": false,
+      "note": "Rebatimento do tampo. No EEVEE isso vinha da GI: o tampo claro logo a frente do detetive devolvia o facho quente para o peito e o rosto. Sem sombra de proposito - rebatimento nao projeta sombra."
+    },
+    {
+      "name": "Light_Notebook_Glow",
+      "marker": "MARK_Light_Screen",
+      "markerTarget": "MARK_Light_Screen_T",
+      "type": "Spot",
+      "colorSRGB": [
+        0.58383,
+        0.73536,
+        0.93092
+      ],
+      "intensity": 0.7,
+      "range": 1.6,
+      "spotAngle": 110.0,
+      "innerSpotAngle": 35.0,
+      "shadows": false,
+      "note": "Brilho da tela do notebook. Emissivo no URP e so visual, nao ilumina. Da o contraste frio x quente no rosto que o noir pede."
+    }
+  ]
+}

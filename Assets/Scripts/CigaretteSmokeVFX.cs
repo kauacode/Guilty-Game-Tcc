@@ -144,19 +144,59 @@ public class CigaretteSmokeVFX : MonoBehaviour
     }
 
     /// <summary>
-    /// Cria um material próprio com uma textura de névoa radial gerada em
-    /// runtime. Usa o shader Sprites/Default: alfa-blend já vem configurado
-    /// de fábrica e é compatível tanto com URP quanto Built-in sem precisar
-    /// mexer manualmente em propriedades de blend (fonte dos bugs anteriores).
+    /// Cria um material próprio com uma textura de névoa radial gerada em runtime.
+    ///
+    /// Usa URP/Particles/Lit — e isso importa. Sprites/Default é unlit (e é shader do
+    /// Built-in): a fumaça era desenhada em cinza constante, ignorando a iluminação da
+    /// cena. Depois do art pass a sala ficou quase preta, e cinza 0.5 constante sobre
+    /// preto virava um punhado de pontos brancos flutuando em vez de fumaça.
+    ///
+    /// Com Lit ela recebe a luz da cena: aparece de verdade onde o facho da luminária
+    /// a atravessa e some no escuro — que é como fumaça se comporta.
     /// </summary>
     private Material BuildSmokeMaterial()
     {
-        Shader shader = Shader.Find("Sprites/Default");
-        var mat = new Material(shader)
+        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Lit")
+                     ?? Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                     ?? Shader.Find("Sprites/Default");
+
+        var mat = new Material(shader);
+        Texture2D tex = GenerateSoftParticleTexture();
+
+        if (!shader.name.StartsWith("Universal"))
         {
-            mainTexture = GenerateSoftParticleTexture(),
-            color       = Color.white, // a cor real vem do vértice (colorOverLifetime)
-        };
+            mat.mainTexture = tex;
+            mat.color = Color.white;
+            return mat;
+        }
+
+        mat.SetTexture("_BaseMap", tex);
+        mat.SetColor("_BaseColor", Color.white);   // a cor real vem do vértice (colorOverLifetime)
+
+        // Transparente com alpha blend
+        mat.SetFloat("_Surface", 1f);
+        mat.SetFloat("_Blend", 0f);
+        mat.SetFloat("_ZWrite", 0f);
+        mat.SetFloat("_Cull", (float)CullMode.Off);
+        mat.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
+        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        mat.renderQueue = (int)RenderQueue.Transparent;
+
+        // Fumaça é matéria difusa: sem especular, senão vira plástico brilhante.
+        if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0f);
+        if (mat.HasProperty("_Metallic"))   mat.SetFloat("_Metallic", 0f);
+
+        // Soft particles: mata a borda dura onde o billboard encosta na mesa.
+        // O depth texture já está ligado no URP asset.
+        if (mat.HasProperty("_SoftParticlesEnabled"))
+        {
+            mat.SetFloat("_SoftParticlesEnabled", 1f);
+            mat.SetFloat("_SoftParticlesNearFadeDistance", 0f);
+            mat.SetFloat("_SoftParticlesFarFadeDistance", 0.3f);
+            mat.EnableKeyword("_SOFTPARTICLES_ON");
+        }
+
         return mat;
     }
 
