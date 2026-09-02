@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -52,7 +53,6 @@ public class InterrogationUIToggle : MonoBehaviour
 
         toggleAction = new InputAction(name: "ToggleInterrogationUI", type: InputActionType.Button);
         toggleAction.AddBinding("<Keyboard>/tab");
-        toggleAction.AddBinding("<Keyboard>/space");
         toggleAction.performed += OnTogglePerformed;
     }
 
@@ -75,7 +75,17 @@ public class InterrogationUIToggle : MonoBehaviour
 
     private void OnTogglePerformed(InputAction.CallbackContext context)
     {
+        // Não fecha o painel se o foco está em um campo de texto (usuário digitando)
+        if (IsInputFieldFocused()) return;
         SetVisible(!isVisible);
+    }
+
+    private static bool IsInputFieldFocused()
+    {
+        var selected = EventSystem.current?.currentSelectedGameObject;
+        if (selected == null) return false;
+        return selected.GetComponent<TMP_InputField>() != null
+            || selected.GetComponent<UnityEngine.UI.InputField>() != null;
     }
 
     private void SetVisible(bool visible, bool instant = false)

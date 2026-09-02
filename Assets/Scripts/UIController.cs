@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Controla toda a UI do MVP.
@@ -11,6 +12,14 @@ public class UIController : MonoBehaviour
     [Header("Elementos de Input")]
     [SerializeField] private TMP_InputField playerInputField;
     [SerializeField] private Button sendButton;
+
+    [Header("Reiniciar")]
+    [Tooltip("Fica escondido durante a partida e só aparece no fim de jogo — " +
+             "um botão de reset sempre visível num interrogatório convida a clique acidental.")]
+    [SerializeField] private Button restartButton;
+    [SerializeField] private string openingLine =
+        "Detetive Marcos Silva está esperando seu depoimento.\n\n" +
+        "Onde você estava na noite do dia 14 de março?";
 
     [Header("Elementos de Output")]
     [SerializeField] private TMP_Text detectiveText;
@@ -23,6 +32,8 @@ public class UIController : MonoBehaviour
     [Header("Feedback de Loading")]
     [SerializeField] private GameObject loadingIndicator;
     [SerializeField] private CanvasGroup canvasGroup; // para bloquear UI
+
+    private ScrollRect detectiveScrollRect;
 
     private void Start()
     {
@@ -41,18 +52,52 @@ public class UIController : MonoBehaviour
             ApiClient.Instance.OnRequestFinished += HandleRequestFinished;
         }
 
+        if (restartButton != null)
+        {
+            restartButton.onClick.AddListener(OnRestartButtonClicked);
+            restartButton.gameObject.SetActive(false);
+        }
+
+        // Limpa texto residual do editor no campo de input (ex: texto de teste)
+        playerInputField.text = "";
+
+        // Escuta abertura do painel para limpar o campo de input
+        InterrogationUIToggle.OnMenuToggled += OnPanelToggled;
+
+        // Configura scroll do texto do detetive e melhorias visuais da HUD
+        SetupDetectiveTextScrolling();
+        SetupSuspicionBarBorder();
+        SetupHUDSizes();
+
         // Estado inicial da UI
         SetLoadingState(false);
-        detectiveText.text = "Detetive Marcos Silva está esperando seu depoimento.\n\n" +
-                             "Onde você estava na noite do dia 14 de março?";
+        detectiveText.text = openingLine;
+        ScrollDetectiveTextToBottom();
         UpdateStatusText();
 
         SetSuspicionFillAmount(0f);
     }
 
+    /// <summary>Volta a partida ao estado inicial sem recarregar a cena.</summary>
+    private void OnRestartButtonClicked()
+    {
+        if (GameManager.Instance != null) GameManager.Instance.ResetGame();
+
+        detectiveText.text = openingLine;
+        playerInputField.text = "";
+        sendButton.interactable = true;
+        SetSuspicionFillAmount(0f);
+        UpdateStatusText();
+
+        if (restartButton != null) restartButton.gameObject.SetActive(false);
+
+        playerInputField.ActivateInputField();
+    }
+
     private void OnDestroy()
     {
-        // Sempre remova listeners para evitar memory leaks
+        InterrogationUIToggle.OnMenuToggled -= OnPanelToggled;
+
         if (ApiClient.Instance != null)
         {
             ApiClient.Instance.OnResponseReceived -= HandleApiResponse;
@@ -60,6 +105,22 @@ public class UIController : MonoBehaviour
             ApiClient.Instance.OnRequestStarted -= HandleRequestStarted;
             ApiClient.Instance.OnRequestFinished -= HandleRequestFinished;
         }
+    }
+
+    // Quando o painel abre, limpa o campo, ativa o foco e rola para o fim do texto
+    private void OnPanelToggled(bool isOpen)
+    {
+        if (!isOpen) return;
+        playerInputField.text = "";
+        playerInputField.ActivateInputField();
+        // Aguarda um frame para o layout recalcular antes de rolar
+        StartCoroutine(ScrollToBottomNextFrame());
+    }
+
+    private System.Collections.IEnumerator ScrollToBottomNextFrame()
+    {
+        yield return null; // espera o layout ser recalculado
+        ScrollDetectiveTextToBottom();
     }
 
     private void OnSendButtonClicked()
@@ -94,6 +155,7 @@ public class UIController : MonoBehaviour
 
         // Atualiza o texto do detetive
         detectiveText.text = $"<b>Turno {response.id_turno} — Detetive Silva:</b>\n\n{response.texto_detetive}";
+        ScrollDetectiveTextToBottom();
 
         // Atualiza a barra de suspeita (HUD)
         SetSuspicionFillAmount(response.status_investigacao.nivel_suspeita / 100f);
@@ -108,13 +170,16 @@ public class UIController : MonoBehaviour
         if (response.status_investigacao.fim_de_jogo)
         {
             detectiveText.text += "\n\n<color=#FF4444><b>— INVESTIGAÇÃO ENCERRADA —</b></color>";
+            ScrollDetectiveTextToBottom();
             sendButton.interactable = false;
+            if (restartButton != null) restartButton.gameObject.SetActive(true);
         }
     }
 
     private void HandleApiError(string errorMessage)
     {
         detectiveText.text = $"<color=#FF4444>[Erro] {errorMessage}</color>\n\nVerifique se o servidor está rodando.";
+        ScrollDetectiveTextToBottom();
         Debug.LogError($"[UIController] Erro da API: {errorMessage}");
     }
 
@@ -122,6 +187,7 @@ public class UIController : MonoBehaviour
     {
         SetLoadingState(true);
         detectiveText.text = "O detetive está analisando seu depoimento...";
+        ScrollDetectiveTextToBottom();
     }
 
     private void HandleRequestFinished()
@@ -186,5 +252,154 @@ public class UIController : MonoBehaviour
         string lieIndicator = response.status_investigacao.detectou_mentira ? " ⚠ MENTIRA" : "";
         statusText.text = $"Turno: {response.id_turno} | " +
                          $"Suspeita: {response.status_investigacao.nivel_suspeita}%{lieIndicator}";
+    }
+
+    // ─── Scroll do texto do detetive ─────────────────────────────────────────
+
+    private void ScrollDetectiveTextToBottom()
+    {
+        if (detectiveScrollRect == null) return;
+        // Força o layout a recalcular antes de mover o scroll
+        LayoutRebuilder.ForceRebuildLayoutImmediate(detectiveText.rectTransform);
+        Canvas.ForceUpdateCanvases();
+        detectiveScrollRect.verticalNormalizedPosition = 0f;
+    }
+
+    /// <summary>
+    /// Envolve o detectiveText em um ScrollRect criado em runtime para que
+    /// mensagens longas fiquem dentro da caixa de diálogo com scroll vertical.
+    /// Hierarquia criada:
+    ///   [DialogScrollView] (ScrollRect)
+    ///     └─ [DialogViewport] (RectMask2D)
+    ///           └─ detectiveText (ContentSizeFitter)
+    /// </summary>
+    private void SetupDetectiveTextScrolling()
+    {
+        if (detectiveText == null) return;
+
+        detectiveText.enableWordWrapping = true;
+        detectiveText.overflowMode = TextOverflowModes.Overflow;
+
+        RectTransform textRT = detectiveText.rectTransform;
+        Transform textParent = textRT.parent;
+        if (textParent == null) return;
+
+        // Não reconfigura se já existe um ScrollRect na hierarquia
+        if (textRT.GetComponentInParent<ScrollRect>() != null) return;
+
+        int sibIndex = textRT.GetSiblingIndex();
+
+        // Guarda posicionamento original para replicar no ScrollView
+        Vector2 ancMin    = textRT.anchorMin;
+        Vector2 ancMax    = textRT.anchorMax;
+        Vector2 offMin    = textRT.offsetMin;
+        Vector2 offMax    = textRT.offsetMax;
+
+        // ── ScrollView ────────────────────────────────────────────────────
+        var scrollViewGO = new GameObject("[DialogScrollView]");
+        var scrollViewRT = scrollViewGO.AddComponent<RectTransform>();
+        scrollViewGO.transform.SetParent(textParent, false);
+        scrollViewGO.transform.SetSiblingIndex(sibIndex);
+
+        scrollViewRT.anchorMin = ancMin;
+        scrollViewRT.anchorMax = ancMax;
+        scrollViewRT.offsetMin = offMin;
+        scrollViewRT.offsetMax = offMax;
+
+        // ── Viewport (RectMask2D clippa pelo RectTransform, sem precisar de Image) ──
+        var viewportGO = new GameObject("[DialogViewport]");
+        var viewportRT = viewportGO.AddComponent<RectTransform>();
+        viewportGO.transform.SetParent(scrollViewGO.transform, false);
+
+        viewportRT.anchorMin = Vector2.zero;
+        viewportRT.anchorMax = Vector2.one;
+        viewportRT.sizeDelta = Vector2.zero;
+        viewportRT.anchoredPosition = Vector2.zero;
+        viewportRT.pivot = new Vector2(0f, 1f);
+
+        viewportGO.AddComponent<RectMask2D>();
+
+        // ── Move texto para dentro do Viewport ───────────────────────────
+        textRT.SetParent(viewportGO.transform, false);
+        textRT.anchorMin = new Vector2(0f, 1f);
+        textRT.anchorMax = new Vector2(1f, 1f);
+        textRT.pivot     = new Vector2(0.5f, 1f);
+        textRT.anchoredPosition = Vector2.zero;
+        textRT.sizeDelta = Vector2.zero;
+
+        // ContentSizeFitter permite que o texto cresça verticalmente
+        var csf = detectiveText.gameObject.AddComponent<ContentSizeFitter>();
+        csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        csf.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
+
+        // ── ScrollRect ────────────────────────────────────────────────────
+        var sr = scrollViewGO.AddComponent<ScrollRect>();
+        sr.content          = textRT;
+        sr.viewport         = viewportRT;
+        sr.horizontal       = false;
+        sr.vertical         = true;
+        sr.scrollSensitivity = 30f;
+        sr.movementType     = ScrollRect.MovementType.Clamped;
+        sr.elasticity       = 0.1f;
+
+        detectiveScrollRect = sr;
+    }
+
+    // ─── Borda na barra de suspeita ───────────────────────────────────────────
+
+    private void SetupSuspicionBarBorder()
+    {
+        if (suspicionFillImage == null) return;
+
+        // SuspicionBar_Fill e SuspicionBar_Background são IRMÃOS dentro do HUD.
+        // O pai do Fill é o próprio HUD, não o Background.
+        Transform hud = suspicionFillImage.transform.parent;
+        if (hud == null) return;
+
+        if (hud.Find("[SuspicionBorder]") != null) return;
+
+        // Encontra o Background pelo nome dentro do HUD
+        Transform bgBar = hud.Find("SuspicionBar_Background");
+        if (bgBar == null) return;
+
+        var bgRT = bgBar.GetComponent<RectTransform>();
+        if (bgRT == null) return;
+
+        var borderGO = new GameObject("[SuspicionBorder]");
+        var borderRT = borderGO.AddComponent<RectTransform>();
+        borderGO.transform.SetParent(hud, false);
+
+        // Mesma âncora/posição do Background, apenas 4px maior em cada eixo
+        borderRT.anchorMin        = bgRT.anchorMin;
+        borderRT.anchorMax        = bgRT.anchorMax;
+        borderRT.pivot            = bgRT.pivot;
+        borderRT.anchoredPosition = bgRT.anchoredPosition;
+        borderRT.sizeDelta        = bgRT.sizeDelta + new Vector2(4f, 4f);
+
+        var borderImg = borderGO.AddComponent<Image>();
+        borderImg.color = new Color(0.85f, 0.75f, 0.15f, 1f); // dourado
+
+        // Coloca imediatamente antes do Background (renderiza atrás)
+        borderGO.transform.SetSiblingIndex(bgBar.GetSiblingIndex());
+    }
+
+    // ─── Tamanho dos elementos da HUD ────────────────────────────────────────
+
+    private void SetupHUDSizes()
+    {
+        foreach (var t in FindObjectsByType<TMP_Text>(FindObjectsSortMode.None))
+        {
+            switch (t.gameObject.name)
+            {
+                case "SuspicionLabel":
+                    t.fontSize = 22f;
+                    break;
+                case "InputPromptText":
+                    t.fontSize = 22f;
+                    t.enableWordWrapping = false;
+                    t.overflowMode = TextOverflowModes.Overflow;
+                    break;
+            }
+        }
     }
 }
