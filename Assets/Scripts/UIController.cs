@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 /// <summary>
 /// Controla toda a UI do MVP.
@@ -84,6 +83,7 @@ public class UIController : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.ResetGame();
 
         detectiveText.text = openingLine;
+        ScrollDetectiveTextToBottom();
         playerInputField.text = "";
         sendButton.interactable = true;
         SetSuspicionFillAmount(0f);
