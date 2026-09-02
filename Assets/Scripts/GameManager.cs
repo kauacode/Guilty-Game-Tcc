@@ -25,23 +25,34 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Persiste entre cenas
-        }
-        else
-        {
+            // sem o return, a duplicata ainda gerava um sessionId e logava
+            // "Sessão iniciada" com um ID que morre no frame seguinte
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // Persiste entre cenas
 
         // Gera um ID único de sessão se não estiver definido
         if (string.IsNullOrEmpty(sessionId))
         {
-            sessionId = $"player_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+            sessionId = NewSessionId();
         }
 
         Debug.Log($"[GameManager] Sessão iniciada: {sessionId}");
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    private static string NewSessionId()
+    {
+        return $"player_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
     }
 
     public void ApplyTurnResult(AnalyzeResponse response)
@@ -72,7 +83,12 @@ public class GameManager : MonoBehaviour
         SuspicionLevel = 0;
         IsGameOver = false;
         // Gera novo ID de sessão para reset completo
-        sessionId = $"player_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+        sessionId = NewSessionId();
+
+        // Sem este evento, quem desenha a suspeita (barra da HUD e vinheta do
+        // SuspicionVisualFeedback) ficava preso no valor do jogo anterior.
+        OnSuspicionChanged?.Invoke(SuspicionLevel);
+
         Debug.Log($"[GameManager] Jogo resetado. Nova sessão: {sessionId}");
     }
 }

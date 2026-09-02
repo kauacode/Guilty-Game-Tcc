@@ -105,3 +105,16 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ── Artefatos das ferramentas Guilty (editor) ──
+# Marcadores de "já rodei uma vez" dos setups automáticos.
+# Apagar um deles faz o setup correspondente rodar de novo.
+/.guilty_*_done
+
+# Relatórios que os setups gravam para conferência; regeráveis.
+/AnimPipelineReport.json
+/BreathingLayerReport.json
+/SceneIntegrationReport.json
+
+# Screenshots de validação de animação e do filtro noir.
+/PilotScreens/

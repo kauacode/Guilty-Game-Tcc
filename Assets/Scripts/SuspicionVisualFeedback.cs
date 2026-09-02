@@ -16,6 +16,13 @@ public class SuspicionVisualFeedback : MonoBehaviour
     [Header("Referência")]
     [SerializeField] private Volume globalVolume;
 
+    [Header("Base noir")]
+    [Tooltip("Vinheta de repouso, com suspeita zero. O feedback de suspeita soma por cima " +
+             "disto em vez de partir do preto. Sem esta base o script zerava a vinheta no " +
+             "Awake e o filtro noir ficava sem vinheta nenhuma.")]
+    [SerializeField] private float baseIntensity = 0.28f;
+    [SerializeField] private Color baseColor = new Color(0.03f, 0.04f, 0.07f, 1f);
+
     [Header("Curva de intensidade")]
     [SerializeField] private float maxVignetteIntensity = 0.45f;
     [SerializeField] private float lieDetectedIntensity = 0.75f;
@@ -23,7 +30,7 @@ public class SuspicionVisualFeedback : MonoBehaviour
 
     private Vignette vignette;
     private float targetIntensity;
-    private Color targetColor = Color.black;
+    private Color targetColor;
     private Coroutine liePulseRoutine;
 
     private void Awake()
@@ -40,45 +47,113 @@ public class SuspicionVisualFeedback : MonoBehaviour
 
         vignette.intensity.overrideState = true;
         vignette.color.overrideState = true;
-        vignette.intensity.value = 0f;
+
+        // parte da base noir, não do zero
+        targetIntensity = baseIntensity;
+        targetColor = baseColor;
+        vignette.intensity.value = baseIntensity;
+        vignette.color.value = baseColor;
+    }
+
+    // A inscrição fica no Start, NÃO no OnEnable.
+    //
+    // A Unity roda Awake -> OnEnable por objeto, em sequência: o OnEnable deste
+    // script podia rodar ANTES do Awake do ApiClient. Aí Instance era null, o if
+    // pulava a inscrição em silêncio e o feedback de suspeita nunca funcionava —
+    // sem erro, sem log. Todo Awake termina antes de qualquer Start, então aqui a
+    // referência já existe. É o mesmo padrão que o UIController já usava.
+    private bool subscribed;
+    private bool started;
+
+    private void Start()
+    {
+        started = true;
+        Subscribe();
     }
 
     private void OnEnable()
     {
+        // reativar o objeto depois do Start precisa reinscrever
+        if (started) Subscribe();
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    private void Subscribe()
+    {
+        if (subscribed) return;
+
         if (ApiClient.Instance != null)
-        {
             ApiClient.Instance.OnResponseReceived += HandleApiResponse;
-        }
+        else
+            Debug.LogWarning("[SuspicionVisualFeedback] ApiClient.Instance ausente — " +
+                             "o feedback de suspeita não vai reagir às respostas da API.");
 
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnLieDetected += HandleLieDetected;
             GameManager.Instance.OnGameOver += HandleGameOver;
+            GameManager.Instance.OnSuspicionChanged += HandleSuspicionChanged;
         }
+        else
+        {
+            Debug.LogWarning("[SuspicionVisualFeedback] GameManager.Instance ausente — " +
+                             "mentira detectada e fim de jogo não vão acender a vinheta.");
+        }
+
+        subscribed = true;
     }
 
-    private void OnDisable()
+    private void Unsubscribe()
     {
+        if (!subscribed) return;
+
         if (ApiClient.Instance != null)
-        {
             ApiClient.Instance.OnResponseReceived -= HandleApiResponse;
-        }
 
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnLieDetected -= HandleLieDetected;
             GameManager.Instance.OnGameOver -= HandleGameOver;
+            GameManager.Instance.OnSuspicionChanged -= HandleSuspicionChanged;
         }
+
+        subscribed = false;
+    }
+
+    /// <summary>Volta ao repouso noir quando o GameManager reseta a suspeita.</summary>
+    private void HandleSuspicionChanged(int suspicion)
+    {
+        if (suspicion != 0) return;
+        if (liePulseRoutine != null)
+        {
+            StopCoroutine(liePulseRoutine);
+            liePulseRoutine = null;
+        }
+        targetIntensity = baseIntensity;
+        targetColor = baseColor;
     }
 
     private void HandleApiResponse(AnalyzeResponse response)
     {
         int suspicion = response.status_investigacao.nivel_suspeita;
-        targetIntensity = Mathf.Clamp01(suspicion / 100f) * maxVignetteIntensity;
+        float t = Mathf.Clamp01(suspicion / 100f);
+
+        // soma por cima da base noir em vez de substituí-la
+        targetIntensity = baseIntensity + t * maxVignetteIntensity;
 
         if (ColorUtility.TryParseHtmlString(response.feedback_visual.cor_iluminacao, out Color parsedColor))
         {
-            targetColor = parsedColor;
+            // com suspeita baixa o tom noir domina; a cor da API entra conforme a tensão sobe
+            targetColor = Color.Lerp(baseColor, parsedColor, t);
         }
     }
 

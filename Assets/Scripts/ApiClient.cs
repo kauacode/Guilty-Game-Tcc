@@ -22,15 +22,20 @@ public class ApiClient : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
+            // sem o return, a duplicata seguia executando o resto do Awake
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     /// <summary>
@@ -77,7 +82,21 @@ public class ApiClient : MonoBehaviour
 
             OnRequestFinished?.Invoke();
 
-            // Trata erros de rede
+            // Trata erros de rede.
+            // A UnityWebRequest reporta TIMEOUT como ConnectionError com error
+            // "Request timeout" — não como DataProcessingError. Sem separar aqui,
+            // um timeout da IA aparecia como "servidor não está rodando" e mandava
+            // depurar o backend errado.
+            bool timedOut = !string.IsNullOrEmpty(webRequest.error) &&
+                            webRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (timedOut)
+            {
+                Debug.LogError($"[ApiClient] Timeout após {timeoutSeconds}s\nDetalhe: {webRequest.error}");
+                OnError?.Invoke($"Timeout: a IA demorou mais de {timeoutSeconds:0}s para responder.");
+                yield break;
+            }
+
             if (webRequest.result == UnityWebRequest.Result.ConnectionError)
             {
                 string errorMsg = "Erro de conexão. O servidor FastAPI está rodando?";
@@ -96,8 +115,8 @@ public class ApiClient : MonoBehaviour
 
             if (webRequest.result == UnityWebRequest.Result.DataProcessingError)
             {
-                Debug.LogError($"[ApiClient] Erro de timeout após {timeoutSeconds}s");
-                OnError?.Invoke("Timeout: a IA demorou demais para responder.");
+                Debug.LogError($"[ApiClient] Falha ao processar o download\nDetalhe: {webRequest.error}");
+                OnError?.Invoke("Resposta corrompida da API.");
                 yield break;
             }
 
