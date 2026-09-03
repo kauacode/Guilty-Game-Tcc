@@ -4,8 +4,6 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Menu inicial. Só navegação — nenhuma regra de jogo mora aqui.
-/// O botão de Configurações é placeholder visual: fica desabilitado e
-/// anuncia isso, em vez de abrir uma tela vazia.
 /// </summary>
 public class MainMenuController : MonoBehaviour
 {
@@ -15,6 +13,9 @@ public class MainMenuController : MonoBehaviour
     [Header("Entrada")]
     [SerializeField] private CanvasGroup root;
     [SerializeField] private float fadeInDuration = 0.5f;
+
+    [Header("Configurações")]
+    [SerializeField] private SettingsPanel settingsPanel;
 
     private bool leaving;
 
@@ -62,6 +63,11 @@ public class MainMenuController : MonoBehaviour
             yield return null;
         }
         SceneManager.LoadScene(gameScene);
+    }
+
+    public void OpenSettings()
+    {
+        settingsPanel?.Open();
     }
 
     public void QuitGame()
