@@ -9,7 +9,12 @@ public class ApiClient : MonoBehaviour
     [Header("Configuração da API")]
     [SerializeField] private string baseUrl = "http://localhost:8000";
     [SerializeField] private string apiMode = "mock"; // "mock" ou "real"
-    [SerializeField] private float timeoutSeconds = 30f;
+    [Tooltip("90s cobre o modelo local. Medido no Llama 3.2 3B via Ollama com o " +
+             "prompt real do backend: 7,8s de média e 9,7s de pico com o modelo já " +
+             "carregado — mas a PRIMEIRA chamada depois de subir o Ollama passa de 16s, " +
+             "porque o modelo ainda está sendo carregado na VRAM. Com os 30s antigos, " +
+             "a primeira pergunta da partida corria risco de estourar antes de responder.")]
+    [SerializeField] private float timeoutSeconds = 90f;
 
     // Singleton simples — só um ApiClient por cena
     public static ApiClient Instance { get; private set; }
