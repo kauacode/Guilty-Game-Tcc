@@ -162,6 +162,10 @@ public class GameFlowController : MonoBehaviour
 
     public void QuitToMenu()
     {
+        // Sair no meio também encerra a partida. Sem isto o GameManager (que
+        // sobrevive à troca de cena) levava a sessão, a suspeita e até o
+        // IsGameOver para a próxima partida — que podia já nascer perdida.
+        GameManager.Instance?.ResetGame();
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;

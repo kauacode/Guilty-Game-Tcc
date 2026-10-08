@@ -66,6 +66,16 @@ public static class BackendApi
             json => ok(JsonUtility.FromJson<OkResponse>(json)), fail);
     }
 
+    /// <summary>
+    /// Finaliza a partida no backend: apaga o histórico e o estado dela.
+    /// Cada partida é única — a próxima nunca continua esta.
+    /// </summary>
+    public static IEnumerator EndSession(string sessionId)
+    {
+        yield return Send("DELETE", $"/session/{sessionId}", null, _ => { },
+            e => Debug.LogWarning($"[BackendApi] Não foi possível finalizar a sessão {sessionId}: {e}"));
+    }
+
     public static IEnumerator StartDownload(string modelId, Action<DownloadStatus> ok, Action<string> fail)
         => Send("POST", $"/models/{modelId}/download", null, json => ok(Parse(json)), fail);
 

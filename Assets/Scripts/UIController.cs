@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -75,7 +76,7 @@ public class UIController : MonoBehaviour
         // Estado inicial da UI
         SetLoadingState(false);
         detectiveText.text = openingLine;
-        ScrollDetectiveTextToBottom();
+        ScrollDetectiveTextToTop();
         UpdateStatusText();
 
         SetSuspicionFillAmount(0f);
@@ -96,7 +97,7 @@ public class UIController : MonoBehaviour
             {
                 if (r.ok || waitingClock != null) return;   // não atropela uma resposta em andamento
                 detectiveText.text = $"{openingLine}\n\n<color=#C88A29>[Aviso] {r.erro}</color>";
-                ScrollDetectiveTextToBottom();
+                ScrollDetectiveTextToTop();
             },
             e => Debug.LogWarning($"[UIController] Aquecimento da IA falhou: {e}")));
     }
@@ -107,7 +108,7 @@ public class UIController : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.ResetGame();
 
         detectiveText.text = openingLine;
-        ScrollDetectiveTextToBottom();
+        ScrollDetectiveTextToTop();
         playerInputField.text = "";
         sendButton.interactable = true;
         SetSuspicionFillAmount(0f);
@@ -144,7 +145,7 @@ public class UIController : MonoBehaviour
     private System.Collections.IEnumerator ScrollToBottomNextFrame()
     {
         yield return null; // espera o layout ser recalculado
-        ScrollDetectiveTextToBottom();
+        ScrollDetectiveTextToTop();
     }
 
     private void OnSendButtonClicked()
@@ -178,8 +179,8 @@ public class UIController : MonoBehaviour
         GameManager.Instance.ApplyTurnResult(response);
 
         // Atualiza o texto do detetive
-        detectiveText.text = $"<b>Turno {response.id_turno} — Detetive Silva:</b>\n\n{response.texto_detetive}";
-        ScrollDetectiveTextToBottom();
+        detectiveText.text = $"<b>Turno {response.id_turno} — Detetive Silva:</b>\n\n{FormatDetectiveText(response.texto_detetive)}";
+        ScrollDetectiveTextToTop();
 
         // Atualiza a barra de suspeita (HUD)
         SetSuspicionFillAmount(response.status_investigacao.nivel_suspeita / 100f);
@@ -194,7 +195,7 @@ public class UIController : MonoBehaviour
         if (response.status_investigacao.fim_de_jogo)
         {
             detectiveText.text += "\n\n<color=#FF4444><b>— INVESTIGAÇÃO ENCERRADA —</b></color>";
-            ScrollDetectiveTextToBottom();
+            ScrollDetectiveTextToTop();
             sendButton.interactable = false;
             if (restartButton != null) restartButton.gameObject.SetActive(true);
         }
@@ -205,7 +206,7 @@ public class UIController : MonoBehaviour
         // O servidor sobe sozinho (BackendLauncher) e o backend já explica o
         // que fazer (baixar o modelo, conferir a chave...): sem sufixo genérico.
         detectiveText.text = $"<color=#FF4444>[Erro] {errorMessage}</color>";
-        ScrollDetectiveTextToBottom();
+        ScrollDetectiveTextToTop();
         Debug.LogError($"[UIController] Erro da API: {errorMessage}");
     }
 
@@ -213,7 +214,7 @@ public class UIController : MonoBehaviour
     {
         SetLoadingState(true);
         detectiveText.text = AnalyzingText;
-        ScrollDetectiveTextToBottom();
+        ScrollDetectiveTextToTop();
 
         if (waitingClock != null) StopCoroutine(waitingClock);
         waitingClock = StartCoroutine(WaitingClock());
@@ -295,20 +296,39 @@ public class UIController : MonoBehaviour
             return;
         }
 
-        string lieIndicator = response.status_investigacao.detectou_mentira ? " ⚠ MENTIRA" : "";
+        // Sem emoji: a fonte da prancheta não tem o ⚠ e ele aparecia como "□".
+        string lieIndicator = response.status_investigacao.detectou_mentira
+            ? " <color=#9E1B1B><b>MENTIRA</b></color>" : "";
         statusText.text = $"Turno: {response.id_turno} | " +
                          $"Suspeita: {response.status_investigacao.nivel_suspeita}%{lieIndicator}";
     }
 
+    /// <summary>
+    /// O Gemini às vezes marca ênfase em markdown (*assim*, **assim**), e o
+    /// jogo mostrava os asteriscos crus. Vira itálico/negrito do TextMeshPro.
+    /// </summary>
+    private static string FormatDetectiveText(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        text = Regex.Replace(text, @"\*\*(.+?)\*\*", "<b>$1</b>");
+        text = Regex.Replace(text, @"(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)", "<i>$1</i>");
+        return text;
+    }
+
     // ─── Scroll do texto do detetive ─────────────────────────────────────────
 
-    private void ScrollDetectiveTextToBottom()
+    /// <summary>
+    /// Volta o texto ao começo. A fala do detetive SUBSTITUI a anterior a cada
+    /// turno — não é um histórico que cresce —, então o lugar certo é o topo.
+    /// Rolar para o fim (como era) cortava o começo das falas longas.
+    /// </summary>
+    private void ScrollDetectiveTextToTop()
     {
         if (detectiveScrollRect == null) return;
         // Força o layout a recalcular antes de mover o scroll
         LayoutRebuilder.ForceRebuildLayoutImmediate(detectiveText.rectTransform);
         Canvas.ForceUpdateCanvases();
-        detectiveScrollRect.verticalNormalizedPosition = 0f;
+        detectiveScrollRect.verticalNormalizedPosition = 1f;
     }
 
     /// <summary>
@@ -388,7 +408,57 @@ public class UIController : MonoBehaviour
         sr.movementType     = ScrollRect.MovementType.Clamped;
         sr.elasticity       = 0.1f;
 
+        AddDialogScrollbar(scrollViewGO.transform, sr);
+
         detectiveScrollRect = sr;
+    }
+
+    /// <summary>
+    /// Barra de rolagem fina na lateral do papel. Só aparece quando a fala não
+    /// cabe (AutoHide) — sem ela, ninguém sabia que dava para rolar com a roda
+    /// do mouse, e o resto de uma resposta longa ficava escondido.
+    /// </summary>
+    private static void AddDialogScrollbar(Transform scrollView, ScrollRect sr)
+    {
+        // tinta escura sobre o papel claro, discreta como o resto da prancheta
+        var track = new Color(0f, 0f, 0f, 0.08f);
+        var ink   = new Color(0.16f, 0.13f, 0.10f, 0.55f);
+
+        var barGO = new GameObject("[DialogScrollbar]", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+        barGO.transform.SetParent(scrollView, false);
+        var barRT = barGO.GetComponent<RectTransform>();
+        barRT.anchorMin = new Vector2(1f, 0f);
+        barRT.anchorMax = new Vector2(1f, 1f);
+        barRT.pivot     = new Vector2(1f, 0.5f);
+        barRT.sizeDelta = new Vector2(8f, 0f);
+        barRT.anchoredPosition = Vector2.zero;
+        barGO.GetComponent<Image>().color = track;
+
+        var areaGO = new GameObject("Sliding Area", typeof(RectTransform));
+        areaGO.transform.SetParent(barGO.transform, false);
+        var areaRT = areaGO.GetComponent<RectTransform>();
+        areaRT.anchorMin = Vector2.zero; areaRT.anchorMax = Vector2.one;
+        areaRT.offsetMin = Vector2.zero; areaRT.offsetMax = Vector2.zero;
+
+        var handleGO = new GameObject("Handle", typeof(RectTransform), typeof(Image));
+        handleGO.transform.SetParent(areaGO.transform, false);
+        var handleRT = handleGO.GetComponent<RectTransform>();
+        handleRT.offsetMin = Vector2.zero; handleRT.offsetMax = Vector2.zero;
+        var handleImg = handleGO.GetComponent<Image>();
+        handleImg.color = ink;
+
+        var bar = barGO.GetComponent<Scrollbar>();
+        bar.handleRect    = handleRT;
+        bar.targetGraphic = handleImg;
+        bar.direction     = Scrollbar.Direction.BottomToTop;
+        var cb = bar.colors;
+        cb.highlightedColor = new Color(1.3f, 1.3f, 1.3f, 1f);   // realça no hover
+        cb.pressedColor     = new Color(0.8f, 0.8f, 0.8f, 1f);
+        bar.colors = cb;
+
+        sr.verticalScrollbar = bar;
+        sr.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+        sr.verticalScrollbarSpacing = 6f;
     }
 
     // ─── Borda na barra de suspeita ───────────────────────────────────────────

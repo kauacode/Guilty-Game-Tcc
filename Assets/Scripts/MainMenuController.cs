@@ -50,6 +50,9 @@ public class MainMenuController : MonoBehaviour
     {
         if (leaving) return;
         leaving = true;
+        // Toda partida começa do zero, venha o jogador de onde vier. Na
+        // primeira partida ainda não existe GameManager e nada acontece.
+        GameManager.Instance?.ResetGame();
         StartCoroutine(FadeOutThenLoad());
     }
 

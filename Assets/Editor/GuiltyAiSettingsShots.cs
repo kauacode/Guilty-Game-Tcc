@@ -100,6 +100,19 @@ public static class GuiltyAiSettingsShots
                   "Modelo baixado e pronto. O detetive vai rodar no seu computador, sem internet.", amber);
         });
 
+        // Lista do dropdown aberta: em edit mode o TMP_Dropdown não monta a
+        // lista, então liga o template e escreve o item à mão — é o mesmo
+        // recorte (máscara) que a lista real usa.
+        var template = dropdown.template.gameObject;
+        GuiltyFlowShots.Capture(menu, "ia_5_lista_aberta", () =>
+        {
+            ShowPage(true);
+            Local("BAIXAR (2,1 GB)", -1f, "Ainda não baixado. Baixe uma vez e jogue offline.", muted);
+            template.SetActive(true);
+            dropdown.itemText.text = "Gemini 2.5 Flash (nuvem)";
+        });
+        template.SetActive(false);
+
         Debug.Log("[IA] screenshots em PilotScreens/ia_*.png");
     }
 }

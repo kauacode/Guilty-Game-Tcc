@@ -162,9 +162,42 @@ public static class GuiltyAiSettingsUI
         Wire(getKey.onClick,   ai, nameof(AiSettingsPage.OnGetKey));
         Wire(modelBtn.onClick, ai, nameof(AiSettingsPage.OnModelButton));
 
+        FixDropdownLists(root);
+
         // nasce fechada: a tela sempre abre na página geral
         page.SetActive(false);
         general.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// Leva as correções do NoirDropdown aos dropdowns criados antes delas
+    /// (ex.: Resolução):
+    ///  - a lista era recortada com Mask sobre um Image transparente e abria
+    ///    vazia → RectMask2D;
+    ///  - o fundo do item era transparente e o hover (que multiplica essa cor)
+    ///    nunca aparecia → fundo branco + cores do DropdownItemColors.
+    /// </summary>
+    private static void FixDropdownLists(GameObject root)
+    {
+        foreach (var dd in root.GetComponentsInChildren<TMP_Dropdown>(true))
+        {
+            if (dd.template == null) continue;
+
+            var viewport = dd.template.GetComponent<ScrollRect>()?.viewport;
+            var mask = viewport != null ? viewport.GetComponent<Mask>() : null;
+            if (mask != null)
+            {
+                Object.DestroyImmediate(mask);
+                if (viewport.GetComponent<RectMask2D>() == null) viewport.gameObject.AddComponent<RectMask2D>();
+            }
+
+            var item = dd.template.GetComponentInChildren<Toggle>(true);
+            if (item != null && item.targetGraphic != null)
+            {
+                item.targetGraphic.color = Color.white;
+                item.colors = DropdownItemColors(item.colors);
+            }
+        }
     }
 
     // ─────────────────────────────── apoio ───────────────────────────────
