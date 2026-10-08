@@ -77,8 +77,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Encerra a partida atual e começa outra do zero. Cada partida é única:
+    /// a sessão antiga é finalizada no backend (histórico apagado) e a nova
+    /// ganha outro ID. Chamado por Reiniciar, Voltar ao menu e JOGAR.
+    /// </summary>
     public void ResetGame()
     {
+        // GameManager sobrevive à troca de cena, então a corrotina continua
+        // mesmo com a cena sendo recarregada logo em seguida.
+        if (!string.IsNullOrEmpty(sessionId))
+            StartCoroutine(BackendApi.EndSession(sessionId));
+
         CurrentTurn = 0;
         SuspicionLevel = 0;
         IsGameOver = false;
