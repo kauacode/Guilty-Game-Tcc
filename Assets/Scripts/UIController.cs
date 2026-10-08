@@ -178,7 +178,9 @@ public class UIController : MonoBehaviour
 
     private void HandleApiError(string errorMessage)
     {
-        detectiveText.text = $"<color=#FF4444>[Erro] {errorMessage}</color>\n\nVerifique se o servidor está rodando.";
+        // O servidor sobe sozinho (BackendLauncher) e o backend já explica o
+        // que fazer (baixar o modelo, conferir a chave...): sem sufixo genérico.
+        detectiveText.text = $"<color=#FF4444>[Erro] {errorMessage}</color>";
         ScrollDetectiveTextToBottom();
         Debug.LogError($"[UIController] Erro da API: {errorMessage}");
     }

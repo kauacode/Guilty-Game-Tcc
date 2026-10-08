@@ -8,7 +8,6 @@ public class ApiClient : MonoBehaviour
 {
     [Header("Configuração da API")]
     [SerializeField] private string baseUrl = "http://localhost:8000";
-    [SerializeField] private string apiMode = "mock"; // "mock" ou "real"
     [Tooltip("90s cobre o modelo local. Medido no Llama 3.2 3B via Ollama com o " +
              "prompt real do backend: 7,8s de média e 9,7s de pico com o modelo já " +
              "carregado — mas a PRIMEIRA chamada depois de subir o Ollama passa de 16s, " +
@@ -63,12 +62,27 @@ public class ApiClient : MonoBehaviour
         // Notifica que a requisição começou (para UI mostrar loading)
         OnRequestStarted?.Invoke();
 
+        // O backend sobe junto com o jogo; a primeira pergunta pode chegar
+        // antes de ele terminar de abrir.
+        if (BackendLauncher.Instance != null)
+        {
+            yield return BackendLauncher.Instance.WaitUntilSettled();
+            if (BackendLauncher.Instance.Status == BackendLauncher.State.Failed)
+            {
+                OnRequestFinished?.Invoke();
+                OnError?.Invoke(BackendLauncher.Instance.Error);
+                yield break;
+            }
+        }
+
         // Monta o objeto de request e serializa para JSON
-        var request = new AnalyzeRequest(sessionId, playerText, apiMode);
+        GameSettings.Load();
+        var request = new AnalyzeRequest(sessionId, playerText,
+                                         GameSettings.AiProvider, GameSettings.GeminiApiKey);
         string jsonBody = JsonUtility.ToJson(request);
 
-        Debug.Log($"[ApiClient] Enviando para {baseUrl}/interrogate");
-        Debug.Log($"[ApiClient] Payload: {jsonBody}");
+        // Nunca logar o payload inteiro: ele leva a chave do Gemini do jogador.
+        Debug.Log($"[ApiClient] Enviando para {baseUrl}/interrogate (IA: {request.provider})");
 
         // Cria a requisição HTTP POST
         string url = $"{baseUrl}/interrogate";
@@ -112,9 +126,11 @@ public class ApiClient : MonoBehaviour
 
             if (webRequest.result == UnityWebRequest.Result.ProtocolError)
             {
-                string errorMsg = $"Erro HTTP {webRequest.responseCode}";
-                Debug.LogError($"[ApiClient] {errorMsg}\nResposta: {webRequest.downloadHandler.text}");
-                OnError?.Invoke($"{errorMsg}. Verifique o backend.");
+                // O backend manda mensagens escritas para o jogador (ex.: "O
+                // modelo ainda não foi baixado. Baixe em Configurações...").
+                string errorMsg = BackendApi.ErrorMessage(webRequest);
+                Debug.LogError($"[ApiClient] HTTP {webRequest.responseCode}: {errorMsg}");
+                OnError?.Invoke(errorMsg);
                 yield break;
             }
 

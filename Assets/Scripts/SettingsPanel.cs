@@ -28,6 +28,12 @@ public class SettingsPanel : MonoBehaviour
     [SerializeField] private TMP_Dropdown resolutionDropdown;
     [SerializeField] private Toggle fullscreenToggle;
 
+    [Header("Páginas")]
+    [Tooltip("Áudio e vídeo. A tela sempre abre nela.")]
+    [SerializeField] private GameObject generalPage;
+    [Tooltip("Detetive (IA): escolha da IA, chave do Gemini e download do modelo.")]
+    [SerializeField] private GameObject aiPage;
+
     [Header("Navegação")]
     [SerializeField] private CanvasGroup group;
     [SerializeField] private float fadeDuration = 0.22f;
@@ -41,8 +47,19 @@ public class SettingsPanel : MonoBehaviour
         HideInstant();
     }
 
+    public void ShowGeneralPage() => ShowPage(ai: false);
+    public void ShowAiPage() => ShowPage(ai: true);
+
+    private void ShowPage(bool ai)
+    {
+        // aiPage desativada = AiSettingsPage.OnDisable para o polling do download
+        if (generalPage != null) generalPage.SetActive(!ai);
+        if (aiPage != null) aiPage.SetActive(ai);
+    }
+
     public void Open()
     {
+        ShowGeneralPage();
         LoadIntoUI();
         gameObject.SetActive(true);
         group.blocksRaycasts = true;
