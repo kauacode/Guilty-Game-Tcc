@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -33,6 +34,9 @@ public class UIController : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup; // para bloquear UI
 
     private ScrollRect detectiveScrollRect;
+    private Coroutine waitingClock;
+
+    private const string AnalyzingText = "O detetive está analisando seu depoimento...";
 
     private void Start()
     {
@@ -75,6 +79,26 @@ public class UIController : MonoBehaviour
         UpdateStatusText();
 
         SetSuspicionFillAmount(0f);
+
+        WarmUpDetective();
+    }
+
+    /// <summary>
+    /// Adianta a carga da IA local enquanto o jogador olha a cena. Se o
+    /// modelo escolhido ainda não foi baixado, avisa já — antes de o jogador
+    /// escrever o primeiro depoimento e só então descobrir.
+    /// </summary>
+    private void WarmUpDetective()
+    {
+        GameSettings.Load();
+        StartCoroutine(BackendApi.WarmUp(GameSettings.AiProvider,
+            r =>
+            {
+                if (r.ok || waitingClock != null) return;   // não atropela uma resposta em andamento
+                detectiveText.text = $"{openingLine}\n\n<color=#C88A29>[Aviso] {r.erro}</color>";
+                ScrollDetectiveTextToBottom();
+            },
+            e => Debug.LogWarning($"[UIController] Aquecimento da IA falhou: {e}")));
     }
 
     /// <summary>Volta a partida ao estado inicial sem recarregar a cena.</summary>
@@ -188,13 +212,33 @@ public class UIController : MonoBehaviour
     private void HandleRequestStarted()
     {
         SetLoadingState(true);
-        detectiveText.text = "O detetive está analisando seu depoimento...";
+        detectiveText.text = AnalyzingText;
         ScrollDetectiveTextToBottom();
+
+        if (waitingClock != null) StopCoroutine(waitingClock);
+        waitingClock = StartCoroutine(WaitingClock());
     }
 
     private void HandleRequestFinished()
     {
+        if (waitingClock != null) { StopCoroutine(waitingClock); waitingClock = null; }
         SetLoadingState(false);
+    }
+
+    /// <summary>
+    /// Segundos passando durante a espera. Com a IA local cada resposta leva
+    /// 15-30s; sem um sinal de vida, a tela parada parecia jogo travado.
+    /// Tempo real: o pause zera o timeScale, mas a IA continua trabalhando.
+    /// </summary>
+    private IEnumerator WaitingClock()
+    {
+        float start = Time.realtimeSinceStartup;
+        while (true)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            int seconds = Mathf.FloorToInt(Time.realtimeSinceStartup - start);
+            detectiveText.text = $"{AnalyzingText} <color=#8C8A85>{seconds}s</color>";
+        }
     }
 
     private void SetLoadingState(bool isLoading)

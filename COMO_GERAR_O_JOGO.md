@@ -59,7 +59,7 @@ Suba o `.zip` em **GitHub > Releases > Draft a new release**. Nunca commite
   Respostas levam ~20-30 s em CPU.
 
 Os modelos baixados e os logs ficam em
-`%USERPROFILE%\AppData\LocalLow\DefaultCompany\DetectiveGame\`.
+`%USERPROFILE%\AppData\LocalLow\DefaultCompany\Guilty\`.
 
 ## Desenvolvendo no editor
 
