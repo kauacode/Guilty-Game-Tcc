@@ -312,7 +312,10 @@ public static class GuiltyNoirUI
         var vr = Rect(viewport);
         vr.anchorMin = Vector2.zero; vr.anchorMax = Vector2.one;
         vr.offsetMin = Vector2.zero; vr.offsetMax = Vector2.zero;
-        viewport.AddComponent<Mask>().showMaskGraphic = false;
+        // RectMask2D, não Mask: o Mask recorta pelo alfa do Image, e este
+        // viewport é 100% transparente — o recorte escondia TODOS os itens e a
+        // lista abria vazia. O RectMask2D recorta pelo retângulo.
+        viewport.AddComponent<RectMask2D>();
 
         var content = new GameObject("Content", typeof(RectTransform));
         content.transform.SetParent(viewport.transform, false);

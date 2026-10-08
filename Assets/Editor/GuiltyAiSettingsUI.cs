@@ -162,9 +162,30 @@ public static class GuiltyAiSettingsUI
         Wire(getKey.onClick,   ai, nameof(AiSettingsPage.OnGetKey));
         Wire(modelBtn.onClick, ai, nameof(AiSettingsPage.OnModelButton));
 
+        FixDropdownMasks(root);
+
         // nasce fechada: a tela sempre abre na página geral
         page.SetActive(false);
         general.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// Dropdowns criados antes da correção do NoirDropdown (ex.: Resolução)
+    /// recortavam a lista com Mask sobre um Image transparente — a lista
+    /// abria vazia. Troca pelo RectMask2D.
+    /// </summary>
+    private static void FixDropdownMasks(GameObject root)
+    {
+        foreach (var dd in root.GetComponentsInChildren<TMP_Dropdown>(true))
+        {
+            var viewport = dd.template != null ? dd.template.GetComponent<ScrollRect>()?.viewport : null;
+            if (viewport == null) continue;
+            var mask = viewport.GetComponent<Mask>();
+            if (mask == null) continue;
+            Object.DestroyImmediate(mask);
+            if (viewport.GetComponent<RectMask2D>() == null) viewport.gameObject.AddComponent<RectMask2D>();
+            Debug.Log($"[IA] lista do dropdown '{dd.name}' corrigida (Mask → RectMask2D)");
+        }
     }
 
     // ─────────────────────────────── apoio ───────────────────────────────
