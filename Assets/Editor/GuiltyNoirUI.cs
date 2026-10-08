@@ -330,7 +330,11 @@ public static class GuiltyNoirUI
         ir.anchorMin = new Vector2(0f, 0.5f); ir.anchorMax = new Vector2(1f, 0.5f);
         ir.sizeDelta = new Vector2(0f, 34f);
 
-        var itemBg = Panel("Item Background", item.transform, new Color(0, 0, 0, 0));
+        // Branco, não transparente: o ColorTint do Toggle MULTIPLICA esta cor.
+        // Com alfa 0 aqui, o hover multiplicava por zero e nunca aparecia —
+        // os itens da lista não pareciam clicáveis. O "invisível em repouso"
+        // fica a cargo do normalColor do Toggle, logo abaixo.
+        var itemBg = Panel("Item Background", item.transform, Color.white);
         var ibr = Rect(itemBg);
         ibr.anchorMin = Vector2.zero; ibr.anchorMax = Vector2.one;
         ibr.offsetMin = Vector2.zero; ibr.offsetMax = Vector2.zero;
@@ -352,13 +356,7 @@ public static class GuiltyNoirUI
         var itemToggle = item.GetComponent<Toggle>();
         itemToggle.targetGraphic = itemBg.GetComponent<Image>();
         itemToggle.graphic = itemCheck.GetComponent<Image>();
-        var icb = itemToggle.colors;
-        icb.normalColor = new Color(0, 0, 0, 0);
-        icb.highlightedColor = SurfaceHi;
-        icb.selectedColor = SurfaceHi;
-        icb.pressedColor = Surface;
-        icb.fadeDuration = 0.08f;
-        itemToggle.colors = icb;
+        itemToggle.colors = DropdownItemColors(itemToggle.colors);
 
         scroll.content = cr;
         scroll.viewport = vr;
@@ -381,6 +379,23 @@ public static class GuiltyNoirUI
         dd.colors = dcb;
 
         return dd;
+    }
+
+    /// <summary>
+    /// Estados de um item da lista do dropdown. O realce é âmbar translúcido
+    /// — a mesma cor de destaque dos botões —, porque um cinza sobre o fundo
+    /// quase preto da lista ficava imperceptível.
+    /// </summary>
+    public static ColorBlock DropdownItemColors(ColorBlock cb)
+    {
+        cb.normalColor      = new Color(1f, 1f, 1f, 0f);
+        cb.highlightedColor = new Color(Amber.r, Amber.g, Amber.b, 0.22f);
+        cb.pressedColor     = new Color(Amber.r, Amber.g, Amber.b, 0.38f);
+        // foco de teclado/controle (a lista abre com o item atual selecionado)
+        cb.selectedColor    = new Color(1f, 1f, 1f, 0.06f);
+        cb.colorMultiplier  = 1f;
+        cb.fadeDuration     = 0.08f;
+        return cb;
     }
 
     /// <summary>

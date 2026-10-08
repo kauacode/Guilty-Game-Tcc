@@ -41,10 +41,17 @@ public class SettingsPanel : MonoBehaviour
     private List<Vector2Int> resolutions;
     private bool wiring;
 
+    private bool opening;
+
     private void Awake()
     {
         if (group == null) group = GetComponent<CanvasGroup>();
-        HideInstant();
+
+        // A tela nasce desativada na cena, então o Awake só roda quando o
+        // Open() a ativa pela primeira vez. Esconder aqui desfazia esse Open:
+        // o 1º clique em Configurações não abria nada e só o 2º funcionava.
+        if (opening) group.alpha = 0f;   // o fade do Open parte do zero
+        else HideInstant();
     }
 
     public void ShowGeneralPage() => ShowPage(ai: false);
@@ -59,9 +66,11 @@ public class SettingsPanel : MonoBehaviour
 
     public void Open()
     {
+        opening = true;
         ShowGeneralPage();
         LoadIntoUI();
         gameObject.SetActive(true);
+        opening = false;
         group.blocksRaycasts = true;
         group.interactable = true;
         StopAllCoroutines();
