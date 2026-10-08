@@ -380,6 +380,66 @@ public static class GuiltyNoirUI
         return dd;
     }
 
+    /// <summary>
+    /// Campo de texto de uma linha, no mesmo desenho do NoirDropdown (caixa
+    /// reta + filete âmbar). Nasce como senha: o único uso hoje é a chave do
+    /// Gemini, que não deve aparecer na tela de quem está assistindo.
+    /// </summary>
+    public static TMP_InputField NoirInputField(string name, Transform parent, Vector2 size,
+                                                string placeholderText)
+    {
+        var go = Panel(name, parent, Surface);
+        var r = Rect(go);
+        r.anchorMin = new Vector2(0f, 0.5f); r.anchorMax = new Vector2(0f, 0.5f);
+        r.pivot = new Vector2(0f, 0.5f);
+        r.sizeDelta = size;
+
+        var accent = Panel(name + "_Accent", go.transform, Amber);
+        accent.GetComponent<Image>().raycastTarget = false;
+        var ar = Rect(accent);
+        ar.anchorMin = new Vector2(0f, 0f); ar.anchorMax = new Vector2(0f, 1f);
+        ar.pivot = new Vector2(0f, 0.5f);
+        ar.sizeDelta = new Vector2(2f, 0f);
+
+        // área com máscara: texto longo rola dentro da caixa em vez de vazar
+        var area = new GameObject(name + "_TextArea", typeof(RectTransform), typeof(RectMask2D));
+        area.transform.SetParent(go.transform, false);
+        var arr = Rect(area);
+        arr.anchorMin = Vector2.zero; arr.anchorMax = Vector2.one;
+        arr.offsetMin = new Vector2(14f, 4f); arr.offsetMax = new Vector2(-10f, -4f);
+
+        var placeholder = Text(name + "_Placeholder", area.transform, placeholderText, 15f,
+                               new Color(TextMuted.r, TextMuted.g, TextMuted.b, 0.7f), 2f);
+        placeholder.fontStyle = FontStyles.Italic;
+        placeholder.enableWordWrapping = false;
+        Stretch(placeholder.rectTransform);
+
+        var text = Text(name + "_Text", area.transform, "", 15f, TextHi, 2f);
+        text.enableWordWrapping = false;
+        Stretch(text.rectTransform);
+
+        var input = go.AddComponent<TMP_InputField>();
+        input.targetGraphic = go.GetComponent<Image>();
+        input.textViewport = arr;
+        input.textComponent = text;
+        input.placeholder = placeholder;
+        input.fontAsset = text.font;
+        input.lineType = TMP_InputField.LineType.SingleLine;
+        input.characterLimit = 200;
+        input.customCaretColor = true;
+        input.caretColor = Amber;
+        input.selectionColor = new Color(Amber.r, Amber.g, Amber.b, 0.35f);
+        input.asteriskChar = '•';
+        input.contentType = TMP_InputField.ContentType.Password;
+        return input;
+    }
+
+    private static void Stretch(RectTransform r)
+    {
+        r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one;
+        r.offsetMin = Vector2.zero; r.offsetMax = Vector2.zero;
+    }
+
     /// <summary>Coluna vertical de botões, alinhada à esquerda.</summary>
     public static GameObject Column(string name, Transform parent, float spacing)
     {

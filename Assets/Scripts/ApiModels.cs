@@ -8,13 +8,16 @@ public class AnalyzeRequest
 {
     public string session_id;
     public string player_text;
-    public string mode;
+    // IA escolhida em Configurações > Detetive (IA): "gemini" ou um modelo local.
+    public string provider;
+    public string gemini_api_key;
 
-    public AnalyzeRequest(string sessionId, string text, string apiMode = "mock")
+    public AnalyzeRequest(string sessionId, string text, string aiProvider, string geminiApiKey)
     {
         session_id = sessionId;
         player_text = text;
-        mode = apiMode;
+        provider = aiProvider;
+        gemini_api_key = geminiApiKey;
     }
 }
 

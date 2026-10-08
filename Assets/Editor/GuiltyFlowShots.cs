@@ -86,7 +86,7 @@ public static class GuiltyFlowShots
     /// A tela de Configurações fica desativada na cena (o Awake que a esconde só
     /// roda em Play mode). Para fotografar, liga na mão e devolve depois.
     /// </summary>
-    private static void ToggleSettings(Scene scene, bool on)
+    internal static void ToggleSettings(Scene scene, bool on)
     {
         var panel = scene.GetRootGameObjects()
             .SelectMany(r => r.GetComponentsInChildren<SettingsPanel>(true))
@@ -123,7 +123,7 @@ public static class GuiltyFlowShots
         if (so.FindProperty("endBody").objectReferenceValue is TMP_Text b) b.text = body;
     }
 
-    private static void Capture(Scene scene, string name, System.Action prepare)
+    internal static void Capture(Scene scene, string name, System.Action prepare)
     {
         prepare?.Invoke();
 

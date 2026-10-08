@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Audio;
 
 /// <summary>
-/// Estado das configurações do jogador: volumes, resolução e tela cheia.
+/// Estado das configurações do jogador: volumes, resolução, tela cheia e a
+/// IA que faz o papel do detetive.
 ///
 /// Fica separado da UI de propósito — a tela de Configurações só lê e escreve
 /// aqui. Assim o Pause pode abrir a mesma tela depois sem duplicar lógica, e as
@@ -36,11 +37,31 @@ public static class GameSettings
     private const string KeyResW   = "guilty.screen.w";
     private const string KeyResH   = "guilty.screen.h";
     private const string KeyFull   = "guilty.screen.fullscreen";
+    private const string KeyAi     = "guilty.ai.provider";
+    private const string KeyGemini = "guilty.ai.gemini_key";
+
+    /// <summary>
+    /// IA padrão: o modelo local roda offline e sem conta. Se ainda não foi
+    /// baixado, o backend responde pedindo o download — com o caminho exato
+    /// em Configurações.
+    /// </summary>
+    public const string DefaultAiProvider = "qwen2.5-3b";
 
     public static float Master { get; private set; } = 0.8f;
     public static float Music  { get; private set; } = 0.8f;
     public static float Sfx    { get; private set; } = 0.8f;
     public static bool  Fullscreen { get; private set; } = true;
+
+    /// <summary>"gemini" ou o id de um modelo local do catálogo do backend.</summary>
+    public static string AiProvider   { get; private set; } = DefaultAiProvider;
+
+    /// <summary>
+    /// Chave do Gemini do PRÓPRIO jogador. Vai só até o backend local
+    /// (127.0.0.1). Fica em PlayerPrefs, que no Windows é o registro do
+    /// usuário (sem criptografia) — aceitável para uma chave gratuita do AI
+    /// Studio, e o motivo de nunca embutirmos uma chave nossa no jogo.
+    /// </summary>
+    public static string GeminiApiKey { get; private set; } = "";
 
     private static AudioMixer mixer;
     private static bool loaded;
@@ -63,6 +84,8 @@ public static class GameSettings
         Music  = PlayerPrefs.GetFloat(KeyMusic,  0.8f);
         Sfx    = PlayerPrefs.GetFloat(KeySfx,    0.8f);
         Fullscreen = PlayerPrefs.GetInt(KeyFull, Screen.fullScreen ? 1 : 0) == 1;
+        AiProvider   = PlayerPrefs.GetString(KeyAi, DefaultAiProvider);
+        GeminiApiKey = PlayerPrefs.GetString(KeyGemini, "");
         loaded = true;
     }
 
@@ -74,12 +97,23 @@ public static class GameSettings
         PlayerPrefs.SetInt(KeyFull, Fullscreen ? 1 : 0);
         PlayerPrefs.SetInt(KeyResW, Screen.width);
         PlayerPrefs.SetInt(KeyResH, Screen.height);
+        PlayerPrefs.SetString(KeyAi, AiProvider);
+        PlayerPrefs.SetString(KeyGemini, GeminiApiKey);
         PlayerPrefs.Save();
     }
 
     public static Vector2Int SavedResolution =>
         new Vector2Int(PlayerPrefs.GetInt(KeyResW, Screen.width),
                        PlayerPrefs.GetInt(KeyResH, Screen.height));
+
+    // ───────────────────────────── detetive (IA) ─────────────────────────────
+
+    public static void SetAiProvider(string id)
+    {
+        if (!string.IsNullOrEmpty(id)) AiProvider = id;
+    }
+
+    public static void SetGeminiApiKey(string key) => GeminiApiKey = (key ?? "").Trim();
 
     // ─────────────────────────────── áudio ───────────────────────────────
 
