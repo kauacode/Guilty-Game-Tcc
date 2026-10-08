@@ -39,7 +39,7 @@ public static class BackendApi
 
     [Serializable] private class ProvidersResponse { public ProviderInfo[] providers; }
     [Serializable] private class KeyTestRequest { public string gemini_api_key; }
-    [Serializable] public class KeyTestResponse { public bool ok; public string erro; }
+    [Serializable] public class OkResponse { public bool ok; public string erro; }
     [Serializable] private class ErrorBody { public string detail; }
 
     public static IEnumerator GetProviders(Action<ProviderInfo[]> ok, Action<string> fail)
@@ -48,11 +48,22 @@ public static class BackendApi
             json => ok(JsonUtility.FromJson<ProvidersResponse>(json).providers), fail);
     }
 
-    public static IEnumerator TestGeminiKey(string key, Action<KeyTestResponse> ok, Action<string> fail)
+    public static IEnumerator TestGeminiKey(string key, Action<OkResponse> ok, Action<string> fail)
     {
         string body = JsonUtility.ToJson(new KeyTestRequest { gemini_api_key = key });
         yield return Send("POST", "/providers/gemini/testar", body,
-            json => ok(JsonUtility.FromJson<KeyTestResponse>(json)), fail);
+            json => ok(JsonUtility.FromJson<OkResponse>(json)), fail);
+    }
+
+    /// <summary>
+    /// Pede ao backend para carregar o modelo e processar a parte fixa do
+    /// prompt enquanto o jogador ainda olha a cena. Responde na hora; com o
+    /// Qwen a 1ª pergunta cai de ~37s para ~17s. No Gemini não faz nada.
+    /// </summary>
+    public static IEnumerator WarmUp(string providerId, Action<OkResponse> ok, Action<string> fail)
+    {
+        yield return Send("POST", $"/providers/{providerId}/aquecer", null,
+            json => ok(JsonUtility.FromJson<OkResponse>(json)), fail);
     }
 
     public static IEnumerator StartDownload(string modelId, Action<DownloadStatus> ok, Action<string> fail)

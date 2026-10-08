@@ -173,7 +173,7 @@ public class AiSettingsPage : MonoBehaviour
         testKeyButton.interactable = false;
         SetStatus("Testando a chave com o Google...", TextMuted);
 
-        BackendApi.KeyTestResponse result = null;
+        BackendApi.OkResponse result = null;
         string error = null;
         yield return BackendApi.TestGeminiKey(key, r => result = r, e => error = e);
 
