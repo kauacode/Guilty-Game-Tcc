@@ -81,7 +81,8 @@ public class PlayerCameraLook : MonoBehaviour
 
     private void Update()
     {
-        if (!_isLookEnabled) return;
+        // Com a ajuda aberta o mouse é do overlay, não da câmera.
+        if (!_isLookEnabled || TutorialOverlay.AnyOpen) return;
 
         AccumulateInput();
         SmoothTowardTarget();

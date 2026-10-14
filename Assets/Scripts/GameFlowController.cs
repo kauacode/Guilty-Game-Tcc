@@ -4,24 +4,16 @@ using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Pause e fim de jogo. Não decide nada sobre suspeita — só REAGE ao que o
-/// GameManager e o ApiClient já publicam.
+/// Pause e fim de jogo. Não decide nada sobre suspeita, turnos ou vitória —
+/// só REAGE ao que o backend decide (game_rules.py) e o GameManager publica.
 ///
-/// REGRAS (levantadas do código, não supostas):
-///
-///   DERROTA — já existia. O backend liga fim_de_jogo quando a suspeita fica
-///   >= 90 por 3 turnos seguidos (prompt_orchestrator.py). O GameManager
-///   converte isso em OnGameOver. Como o jogador É o suspeito, suspeita alta
-///   é o fracasso dele: o detetive fechou o caso contra ele.
-///
-///   VITÓRIA — NÃO existia no projeto. Nem o backend nem o Unity tinham
-///   qualquer noção de ganhar. A regra abaixo é uma PROPOSTA, montada só com
-///   dados que a API já devolve (id_turno e nivel_suspeita), sem tocar na
-///   lógica de suspeita: aguentar victoryTurn turnos mantendo a suspeita em
-///   até victoryMaxSuspicion significa que o interrogatório não pegou nada.
-///
-/// Não existe temporizador no jogo, então "tempo esgotado" não é uma derrota
-/// possível hoje — seria preciso criar um cronômetro, o que mudaria o design.
+/// REGRAS DE FIM (todas no backend, verificadas a cada turno):
+///   DERROTA  suspeita = 100%                         (imediata, em qualquer turno)
+///   DERROTA  suspeita >= 80% por 3 turnos seguidos
+///   VITÓRIA  a partir do turno 8 com suspeita <= 30%  ("liberado")
+///   LIMITE   no turno 12: suspeita >= 60% = derrota, senão vitória
+/// Antes a vitória era avaliada aqui (turno >= 8 e suspeita <= 30) e a derrota
+/// no backend (3 turnos >= 90): duas definições do mesmo jogo. Agora existe uma.
 /// </summary>
 public class GameFlowController : MonoBehaviour
 {
@@ -32,12 +24,6 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private CanvasGroup endOverlay;
     [SerializeField] private TMPro.TMP_Text endTitle;
     [SerializeField] private TMPro.TMP_Text endBody;
-
-    [Header("Regra de vitória (proposta — ver resumo da classe)")]
-    [Tooltip("Turno a partir do qual o suspeito é liberado, se a suspeita estiver baixa.")]
-    [SerializeField] private int victoryTurn = 8;
-    [Tooltip("Suspeita máxima aceita para considerar que o interrogatório não pegou nada.")]
-    [SerializeField] private int victoryMaxSuspicion = 30;
 
     [Header("Transição")]
     [SerializeField] private float fadeDuration = 0.28f;
@@ -89,15 +75,10 @@ public class GameFlowController : MonoBehaviour
     // OnEnable pode rodar antes do Awake do ApiClient/GameManager.
     private void Start()
     {
-        if (ApiClient.Instance != null)
-            ApiClient.Instance.OnResponseReceived += OnApiResponse;
-        else
-            Debug.LogWarning("[GameFlow] ApiClient.Instance ausente — a vitória não será avaliada.");
-
         if (GameManager.Instance != null)
-            GameManager.Instance.OnGameOver += OnDefeat;
+            GameManager.Instance.OnGameOver += OnGameOver;
         else
-            Debug.LogWarning("[GameFlow] GameManager.Instance ausente — a derrota não será detectada.");
+            Debug.LogWarning("[GameFlow] GameManager.Instance ausente — o fim de jogo não será detectado.");
 
         subscribed = true;
     }
@@ -105,8 +86,7 @@ public class GameFlowController : MonoBehaviour
     private void Unsubscribe()
     {
         if (!subscribed) return;
-        if (ApiClient.Instance != null) ApiClient.Instance.OnResponseReceived -= OnApiResponse;
-        if (GameManager.Instance != null) GameManager.Instance.OnGameOver -= OnDefeat;
+        if (GameManager.Instance != null) GameManager.Instance.OnGameOver -= OnGameOver;
         subscribed = false;
     }
 
@@ -174,22 +154,11 @@ public class GameFlowController : MonoBehaviour
 
     // ────────────────────────── VITÓRIA / DERROTA ──────────────────────────
 
-    private void OnApiResponse(AnalyzeResponse response)
+    private void OnGameOver()
     {
-        if (Ended != EndKind.None) return;
-        if (response?.status_investigacao == null) return;
-
-        // a derrota chega pelo OnGameOver do GameManager; aqui só a vitória
-        if (response.status_investigacao.fim_de_jogo) return;
-
-        if (response.id_turno >= victoryTurn &&
-            response.status_investigacao.nivel_suspeita <= victoryMaxSuspicion)
-        {
-            EndRun(EndKind.Victory);
-        }
+        var gm = GameManager.Instance;
+        EndRun(gm != null && gm.Result == "vitoria" ? EndKind.Victory : EndKind.Defeat);
     }
-
-    private void OnDefeat() => EndRun(EndKind.Defeat);
 
     /// <summary>
     /// Público para que ferramentas de validação possam abrir a tela de fim sem
@@ -210,14 +179,33 @@ public class GameFlowController : MonoBehaviour
             endTitle.text = kind == EndKind.Victory ? "LIBERADO" : "CASO ENCERRADO";
 
         if (endBody != null)
-            endBody.text = kind == EndKind.Victory
-                ? $"Você atravessou {victoryTurn} turnos sem se contradizer.\n" +
-                  "O detetive não reuniu o suficiente para sustentar a acusação."
-                : "A suspeita se manteve no limite por três turnos seguidos.\n" +
-                  "O detetive fechou o caso contra você.";
+            endBody.text = EndMessage(kind, GameManager.Instance != null ? GameManager.Instance.EndReason : "");
 
         Show(endOverlay);
         Debug.Log($"[GameFlow] fim de jogo: {kind}");
+    }
+
+    private static string EndMessage(EndKind kind, string reason)
+    {
+        switch (reason)
+        {
+            case "suspeita_maxima":
+                return "A suspeita chegou a 100%.\nO detetive fechou o caso contra você.";
+            case "suspeita_sustentada":
+                return "A suspeita se manteve em 80% ou mais por três turnos seguidos.\n" +
+                       "O detetive fechou o caso contra você.";
+            case "liberado":
+                return "Você sustentou o depoimento com a suspeita baixa.\n" +
+                       "O detetive não reuniu o suficiente para sustentar a acusação.";
+            case "limite_de_turnos":
+                return kind == EndKind.Victory
+                    ? "O interrogatório chegou ao limite de turnos sem provas contra você.\nVocê foi liberado."
+                    : "O interrogatório chegou ao limite de turnos com a suspeita alta.\nO detetive fechou o caso contra você.";
+            default:
+                return kind == EndKind.Victory
+                    ? "O detetive não reuniu o suficiente para sustentar a acusação."
+                    : "O detetive fechou o caso contra você.";
+        }
     }
 
     // ───────────────────────────── transições ─────────────────────────────

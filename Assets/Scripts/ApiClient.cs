@@ -24,6 +24,12 @@ public class ApiClient : MonoBehaviour
     public event Action OnRequestStarted;
     public event Action OnRequestFinished;
 
+    /// <summary>
+    /// Janela de resposta aberta (timer de 60 s). Vazia = sem regra de tempo
+    /// (backend fora do ar ao clicar em RESPONDER, ou versão antiga do backend).
+    /// </summary>
+    public string CurrentInteractionId { get; private set; } = "";
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -54,10 +60,108 @@ public class ApiClient : MonoBehaviour
             return;
         }
 
-        StartCoroutine(PostToApi(sessionId, playerText));
+        StartCoroutine(PostToApi(sessionId, playerText, CurrentInteractionId));
     }
 
-    private IEnumerator PostToApi(string sessionId, string playerText)
+    /// <summary>Esquece a janela de resposta (nova partida).</summary>
+    public void ResetInteraction() => CurrentInteractionId = "";
+
+    // ─── Timer de resposta (o prazo é do SERVIDOR; aqui só se pergunta e se exibe) ───
+
+    /// <summary>
+    /// O jogador acionou RESPONDER: pede ao backend para abrir a janela de 60 s.
+    /// Idempotente — se já há uma aberta, volta a mesma com o tempo que resta.
+    /// </summary>
+    public void OpenInteraction(string sessionId, Action<ResponseWindow> ok, Action<string> fail)
+    {
+        StartCoroutine(OpenInteractionRoutine(sessionId, ok, fail));
+    }
+
+    private IEnumerator OpenInteractionRoutine(string sessionId, Action<ResponseWindow> ok, Action<string> fail)
+    {
+        if (BackendLauncher.Instance != null)
+        {
+            yield return BackendLauncher.Instance.WaitUntilSettled();
+            if (BackendLauncher.Instance.Status == BackendLauncher.State.Failed)
+            {
+                fail?.Invoke(BackendLauncher.Instance.Error);
+                yield break;
+            }
+        }
+
+        string url = $"{baseUrl}/session/{sessionId}/interacao";
+        if (!string.IsNullOrEmpty(CaseSelection.CaseId))
+            url += "?case_id=" + UnityWebRequest.EscapeURL(CaseSelection.CaseId);
+
+        using (var req = new UnityWebRequest(url, "POST"))
+        {
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 10;
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                fail?.Invoke(BackendApi.ErrorMessage(req));
+                yield break;
+            }
+
+            var window = JsonUtility.FromJson<ResponseWindow>(req.downloadHandler.text);
+            if (window == null || string.IsNullOrEmpty(window.interacao_id))
+            {
+                fail?.Invoke("Resposta inválida ao abrir a janela de resposta.");
+                yield break;
+            }
+
+            CurrentInteractionId = window.interacao_id;
+            ok?.Invoke(window);
+        }
+    }
+
+    /// <summary>
+    /// Os 60 s acabaram sem resposta. O backend confere o próprio relógio:
+    /// se aplicar a penalidade, a resposta do sistema chega por
+    /// OnResponseReceived como qualquer turno. Se a resposta já tinha sido
+    /// enviada (corrida), `aplicado` vem falso e nada acontece.
+    /// <paramref name="tooEarly"/> recebe os segundos que faltam quando o
+    /// servidor acha que ainda é cedo (diferença de relógio).
+    /// </summary>
+    public void ExpireInteraction(string sessionId, string interactionId, Action<float> tooEarly)
+    {
+        StartCoroutine(ExpireInteractionRoutine(sessionId, interactionId, tooEarly));
+    }
+
+    private IEnumerator ExpireInteractionRoutine(string sessionId, string interactionId, Action<float> tooEarly)
+    {
+        string url = $"{baseUrl}/session/{sessionId}/interacao/{interactionId}/expirar";
+        using (var req = new UnityWebRequest(url, "POST"))
+        {
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 10;
+            yield return req.SendWebRequest();
+
+            if (req.result == UnityWebRequest.Result.ProtocolError && req.responseCode == 409)
+            {
+                tooEarly?.Invoke(1f);
+                yield break;
+            }
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning($"[ApiClient] Não foi possível expirar a interação: {BackendApi.ErrorMessage(req)}");
+                yield break;
+            }
+
+            var result = JsonUtility.FromJson<ExpireResult>(req.downloadHandler.text);
+            if (result == null || !result.aplicado || result.resposta == null ||
+                result.resposta.status_investigacao == null || result.resposta.feedback_visual == null)
+                yield break;   // já resolvida (respondida a tempo) ou inválida
+
+            CurrentInteractionId = result.resposta.proxima_interacao_id ?? "";
+            OnResponseReceived?.Invoke(result.resposta);
+        }
+    }
+
+    private IEnumerator PostToApi(string sessionId, string playerText, string interactionId)
     {
         // Notifica que a requisição começou (para UI mostrar loading)
         OnRequestStarted?.Invoke();
@@ -78,7 +182,8 @@ public class ApiClient : MonoBehaviour
         // Monta o objeto de request e serializa para JSON
         GameSettings.Load();
         var request = new AnalyzeRequest(sessionId, playerText,
-                                         GameSettings.AiProvider, GameSettings.GeminiApiKey);
+                                         GameSettings.AiProvider, GameSettings.GeminiApiKey,
+                                         CaseSelection.CaseId ?? "", interactionId ?? "");
         string jsonBody = JsonUtility.ToJson(request);
 
         // Nunca logar o payload inteiro: ele leva a chave do Gemini do jogador.
@@ -157,6 +262,19 @@ public class ApiClient : MonoBehaviour
                     yield break;
                 }
 
+                // Resposta que repete um turno já aplicado (ex.: o envio chegou
+                // depois de o tempo ter acabado e o backend devolveu o timeout
+                // de novo): não é um turno novo, então não é reaplicada.
+                var gm = GameManager.Instance;
+                if (gm != null && response.id_turno > 0 && response.id_turno <= gm.CurrentTurn)
+                {
+                    if (!gm.IsGameOver)
+                        OnError?.Invoke("O tempo acabou antes de o envio ser concluído. Responda à nova pergunta.");
+                    yield break;
+                }
+
+                // A próxima janela (60 s) já nasceu junto com esta fala.
+                CurrentInteractionId = response.proxima_interacao_id ?? "";
                 OnResponseReceived?.Invoke(response);
             }
             catch (Exception e)

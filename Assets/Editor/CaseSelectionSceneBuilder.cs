@@ -91,9 +91,9 @@ public static class CaseSelectionSceneBuilder
             AddCaseItem(boardGO, "Case_01", new CaseInfo
             {
                 caseId          = "CASO 01",
-                caseTitle       = "O Homem da Gaveta",
+                caseTitle       = "O Homicídio da Rua 7",
                 statusBadge     = "INVESTIGAÇÃO ATIVA",
-                caseDescription = "Um empresário encontrado morto em seu escritório. Sem sinais de arrombamento. O suspeito principal nega qualquer envolvimento, mas as evidências apontam em outra direção.",
+                caseDescription = "Otávio Lisboa, sócio da Gráfica Bandeirantes, foi encontrado morto no depósito dos fundos. O laudo fixa a morte entre 20h00 e 20h30. Você é Daniel Reis, o último a sair do prédio e que discutiu com a vítima horas antes. Convença o detetive de que é inocente.",
                 targetSceneName = TARGET_SCENE,
                 isLocked        = false
             });

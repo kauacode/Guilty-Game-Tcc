@@ -17,6 +17,19 @@ public class GameManager : MonoBehaviour
     public int CurrentTurn { get; private set; } = 0;
     public int SuspicionLevel { get; private set; } = 0;
     public bool IsGameOver { get; private set; } = false;
+    /// <summary>"vitoria" | "derrota" | "" — decidido pelo backend (regras em game_rules.py).</summary>
+    public string Result { get; private set; } = "";
+    /// <summary>suspeita_maxima | suspeita_sustentada | liberado | limite_de_turnos</summary>
+    public string EndReason { get; private set; } = "";
+    public int HighSuspicionStreak { get; private set; } = 0;
+
+    /// <summary>
+    /// Nome mostrado ao jogador. O session_id (player_xxxxxxxx) é identificador
+    /// TÉCNICO — vai para o backend, nunca para a tela. O jogador interpreta o
+    /// suspeito do caso, então o nome amigável é o do personagem.
+    /// </summary>
+    public const string DefaultPlayerName = "Daniel Reis";
+    public string PlayerDisplayName => DefaultPlayerName;
 
     // Eventos de estado do jogo
     public event Action<int> OnSuspicionChanged;
@@ -58,8 +71,12 @@ public class GameManager : MonoBehaviour
     public void ApplyTurnResult(AnalyzeResponse response)
     {
         if (IsGameOver) return;
+        // Resposta de partida já encerrada no backend (reenvio): estado final,
+        // nada a aplicar.
+        if (response.ignorado) return;
 
         CurrentTurn = response.id_turno;
+        HighSuspicionStreak = response.status_investigacao.turnos_suspeita_alta;
 
         int previousSuspicion = SuspicionLevel;
         SuspicionLevel = response.status_investigacao.nivel_suspeita;
@@ -73,6 +90,8 @@ public class GameManager : MonoBehaviour
         if (response.status_investigacao.fim_de_jogo)
         {
             IsGameOver = true;
+            Result = response.status_investigacao.resultado ?? "";
+            EndReason = response.status_investigacao.motivo_fim ?? "";
             OnGameOver?.Invoke();
         }
     }
@@ -92,6 +111,10 @@ public class GameManager : MonoBehaviour
         CurrentTurn = 0;
         SuspicionLevel = 0;
         IsGameOver = false;
+        Result = "";
+        EndReason = "";
+        HighSuspicionStreak = 0;
+        ApiClient.Instance?.ResetInteraction();
         // Gera novo ID de sessão para reset completo
         sessionId = NewSessionId();
 

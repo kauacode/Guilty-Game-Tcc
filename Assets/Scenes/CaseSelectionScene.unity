@@ -1449,11 +1449,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CaseItem
   caseData:
     caseId: CASO 01
-    caseTitle: O Homem da Gaveta
+    caseTitle: "O Homic\xEDdio da Rua 7"
     statusBadge: "INVESTIGA\xC7\xC3O ATIVA"
-    caseDescription: "Um empres\xE1rio encontrado morto em seu escrit\xF3rio. Sem
-      sinais de arrombamento. O suspeito principal nega qualquer envolvimento, mas
-      as evid\xEAncias apontam em outra dire\xE7\xE3o."
+    caseDescription: "Ot\xE1vio Lisboa, s\xF3cio da Gr\xE1fica Bandeirantes, foi encontrado morto no dep\xF3sito dos fundos. O laudo fixa a morte entre 20h00 e 20h30. Voc\xEA \xE9 Daniel Reis, o \xFAltimo a sair do pr\xE9dio e que discutiu com a v\xEDtima horas antes. Conven\xE7a o detetive de que \xE9 inocente."
     suspectPhoto: {fileID: 0}
     targetSceneName: SampleScene
     isLocked: 0

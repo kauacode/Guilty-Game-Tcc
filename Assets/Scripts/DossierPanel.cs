@@ -25,6 +25,23 @@ public class DossierPanel : MonoBehaviour
 
     public bool IsVisible { get; private set; }
 
+    /// <summary>
+    /// O clique cai no botão? Teste por posição, sem depender do EventSystem —
+    /// é o que permite o controlador distinguir "clicou em INICIAR" de "clicou
+    /// em qualquer outro lugar".
+    /// </summary>
+    public bool IsOverConfirm(Vector2 screenPoint) => Contains(confirmButton, screenPoint);
+    public bool IsOverBack(Vector2 screenPoint) => Contains(backButton, screenPoint);
+
+    private static bool Contains(Button b, Vector2 p)
+    {
+        if (b == null || !b.gameObject.activeInHierarchy) return false;
+        var canvas = b.GetComponentInParent<Canvas>();
+        Camera cam = (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? canvas.worldCamera : null;
+        return RectTransformUtility.RectangleContainsScreenPoint((RectTransform)b.transform, p, cam);
+    }
+
     private void Start()
     {
         if (panelRect != null)

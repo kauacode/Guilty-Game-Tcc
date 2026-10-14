@@ -36,6 +36,16 @@ public class UIController : MonoBehaviour
 
     private ScrollRect detectiveScrollRect;
     private Coroutine waitingClock;
+    private InterrogationUIToggle padToggle;
+    private TutorialOverlay tutorial;
+    private GameFlowController flow;
+
+    // Estado do ENVIO, separado da visibilidade da prancheta: a prancheta fecha
+    // um instante depois de o envio começar (para liberar a tela) e reabre
+    // quando o retorno chega, mas uma coisa não depende da outra.
+    private bool requestInFlight;
+    private Coroutine padCloseRoutine;
+    private const float PadCloseDelay = 0.7f;
 
     private const string AnalyzingText = "O detetive está analisando seu depoimento...";
 
@@ -81,6 +91,12 @@ public class UIController : MonoBehaviour
 
         SetSuspicionFillAmount(0f);
 
+        padToggle = FindFirstObjectByType<InterrogationUIToggle>();
+        flow = FindFirstObjectByType<GameFlowController>();
+        tutorial = TutorialOverlay.Create(detectiveText.font);
+        PersistentHud.Create(detectiveText.font);
+        HideLegacySuspicionBar();
+
         WarmUpDetective();
     }
 
@@ -117,6 +133,7 @@ public class UIController : MonoBehaviour
         if (restartButton != null) restartButton.gameObject.SetActive(false);
 
         playerInputField.ActivateInputField();
+        FindFirstObjectByType<InterrogationMenuController>()?.RestartTimer();
     }
 
     private void OnDestroy()
@@ -179,7 +196,10 @@ public class UIController : MonoBehaviour
         GameManager.Instance.ApplyTurnResult(response);
 
         // Atualiza o texto do detetive
-        detectiveText.text = $"<b>Turno {response.id_turno} — Detetive Silva:</b>\n\n{FormatDetectiveText(response.texto_detetive)}";
+        string heading = response.timeout
+            ? $"<b>Turno {response.id_turno} — Tempo esgotado:</b>"
+            : $"<b>Turno {response.id_turno} — Detetive Silva:</b>";
+        detectiveText.text = $"{heading}\n\n{FormatDetectiveText(response.texto_detetive)}";
         ScrollDetectiveTextToTop();
 
         // Atualiza a barra de suspeita (HUD)
@@ -198,7 +218,20 @@ public class UIController : MonoBehaviour
             ScrollDetectiveTextToTop();
             sendButton.interactable = false;
             if (restartButton != null) restartButton.gameObject.SetActive(true);
+            return;
         }
+
+        // Há uma fala nova e uma pergunta pendente: a prancheta reabre para
+        // mostrá-las (se o jogador a tinha aberto, nada muda). Com a partida
+        // encerrada ela NÃO reabre — quem fala agora é a tela de fim.
+        OpenPadForReply();
+    }
+
+    private void OpenPadForReply()
+    {
+        if (padToggle == null) return;
+        if (flow != null && (flow.IsPaused || flow.Ended != GameFlowController.EndKind.None)) return;
+        padToggle.Open();
     }
 
     private void HandleApiError(string errorMessage)
@@ -207,11 +240,17 @@ public class UIController : MonoBehaviour
         // que fazer (baixar o modelo, conferir a chave...): sem sufixo genérico.
         detectiveText.text = $"<color=#FF4444>[Erro] {errorMessage}</color>";
         ScrollDetectiveTextToTop();
+        // O envio falhou: a prancheta volta (ou nem chegou a fechar) com o texto
+        // preservado, para o jogador tentar de novo.
+        OpenPadForReply();
         Debug.LogError($"[UIController] Erro da API: {errorMessage}");
     }
 
     private void HandleRequestStarted()
     {
+        requestInFlight = true;
+        if (padCloseRoutine != null) StopCoroutine(padCloseRoutine);
+        padCloseRoutine = StartCoroutine(ClosePadSoon());
         SetLoadingState(true);
         detectiveText.text = AnalyzingText;
         ScrollDetectiveTextToTop();
@@ -220,8 +259,23 @@ public class UIController : MonoBehaviour
         waitingClock = StartCoroutine(WaitingClock());
     }
 
+    /// <summary>
+    /// Fecha a prancheta ~0,7 s depois de o envio começar, se ele ainda estiver
+    /// em andamento. Se o envio falhar antes disso (erro imediato), o
+    /// HandleRequestFinished cancela e a prancheta nunca chega a fechar.
+    /// </summary>
+    private IEnumerator ClosePadSoon()
+    {
+        yield return new WaitForSecondsRealtime(PadCloseDelay);
+        padCloseRoutine = null;
+        if (requestInFlight && padToggle != null)
+            padToggle.Close(waitingForDetective: true);
+    }
+
     private void HandleRequestFinished()
     {
+        requestInFlight = false;
+        if (padCloseRoutine != null) { StopCoroutine(padCloseRoutine); padCloseRoutine = null; }
         if (waitingClock != null) { StopCoroutine(waitingClock); waitingClock = null; }
         SetLoadingState(false);
     }
@@ -292,15 +346,20 @@ public class UIController : MonoBehaviour
     {
         if (response == null)
         {
-            statusText.text = $"Sessão: {GameManager.Instance.SessionId} | Turno: 0 | Suspeita: 0%";
+            // O session_id é técnico e não aparece na tela: mostra o nome do jogador.
+            statusText.text = $"{GameManager.Instance.PlayerDisplayName} | Turno: 0 | Suspeita: 0%";
             return;
         }
 
         // Sem emoji: a fonte da prancheta não tem o ⚠ e ele aparecia como "□".
         string lieIndicator = response.status_investigacao.detectou_mentira
             ? " <color=#9E1B1B><b>MENTIRA</b></color>" : "";
-        statusText.text = $"Turno: {response.id_turno} | " +
-                         $"Suspeita: {response.status_investigacao.nivel_suspeita}%{lieIndicator}";
+        var st = response.status_investigacao;
+        int maxTurns = response.id_turno + st.turnos_restantes;
+        string turn = maxTurns > response.id_turno ? $"{response.id_turno}/{maxTurns}" : $"{response.id_turno}";
+        string alert = st.turnos_suspeita_alta > 0 ? $" | Alerta: {st.turnos_suspeita_alta}/3" : "";
+        statusText.text = $"{GameManager.Instance.PlayerDisplayName} | Turno: {turn} | " +
+                         $"Suspeita: {st.nivel_suspeita}%{alert}{lieIndicator}";
     }
 
     /// <summary>
@@ -499,6 +558,23 @@ public class UIController : MonoBehaviour
         borderGO.transform.SetSiblingIndex(bgBar.GetSiblingIndex());
     }
 
+    private void HideLegacySuspicionBar()
+    {
+        if (suspicionFillImage == null) return;
+        Transform hud = suspicionFillImage.transform.parent;
+        if (hud == null) return;
+        if (hud.name.IndexOf("HUD", System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            hud.gameObject.SetActive(false);
+            return;
+        }
+        foreach (var n in new[] { "SuspicionBar_Background", "SuspicionBar_Fill", "[SuspicionBorder]" })
+        {
+            var t = hud.Find(n);
+            if (t != null) t.gameObject.SetActive(false);
+        }
+    }
+
     // ─── Tamanho dos elementos da HUD ────────────────────────────────────────
 
     private void SetupHUDSizes()
@@ -507,13 +583,12 @@ public class UIController : MonoBehaviour
         {
             switch (t.gameObject.name)
             {
+                // O HUD novo (PersistentHud) mostra suspeita, turno e dicas o tempo
+                // todo; os antigos, que só existiam com a prancheta aberta,
+                // ficam escondidos para nada aparecer duas vezes.
                 case "SuspicionLabel":
-                    t.fontSize = 22f;
-                    break;
                 case "InputPromptText":
-                    t.fontSize = 22f;
-                    t.enableWordWrapping = false;
-                    t.overflowMode = TextOverflowModes.Overflow;
+                    t.gameObject.SetActive(false);
                     break;
             }
         }

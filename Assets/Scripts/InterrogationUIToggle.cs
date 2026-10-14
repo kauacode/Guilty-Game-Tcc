@@ -23,8 +23,35 @@ public class InterrogationUIToggle : MonoBehaviour
     /// </summary>
     public static event Action<bool> OnMenuToggled;
 
-    private const string PromptClosed = "[TAB] Abrir Interrogatório";
-    private const string PromptOpen   = "[TAB] Fechar / [ENTER] Enviar";
+    private const string PromptClosed = "[TAB] Abrir Interrogatório  |  [F1] Ajuda";
+    private const string PromptOpen   = "[TAB] Fechar  |  [F1] Ajuda";
+    private const string PromptWaiting = "O detetive está analisando…  |  [TAB] Abrir  |  [F1] Ajuda";
+
+    public bool IsOpen => isVisible;
+
+    /// <summary>
+    /// Fecha a prancheta por código (ex.: depois de uma resposta enviada com
+    /// sucesso). Idempotente: se já está fechada não faz nada, e nunca reabre.
+    /// <paramref name="replyWaiting"/> troca a dica do HUD para avisar que há
+    /// uma fala nova do detetive para ler.
+    /// </summary>
+    public void Close(bool waitingForDetective = false)
+    {
+        if (!isVisible) return;
+        SetVisible(false);
+        if (waitingForDetective && inputPromptText != null) inputPromptText.text = PromptWaiting;
+    }
+
+    /// <summary>
+    /// Abre a prancheta por código (fala nova do detetive, erro de envio).
+    /// Idempotente: se já está aberta não faz nada — respostas duplicadas não
+    /// geram piscadas.
+    /// </summary>
+    public void Open()
+    {
+        if (isVisible) return;
+        SetVisible(true);
+    }
 
     [Header("Painel a alternar")]
     [Tooltip("GameObject raiz do painel de chat. É desativado (SetActive(false)) 100% ao fechar — sem resíduo transparente, sem custo de raycast/render.")]

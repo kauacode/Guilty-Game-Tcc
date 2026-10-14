@@ -1,7 +1,9 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
@@ -30,6 +32,12 @@ public class BoardSelectionController : MonoBehaviour
     [SerializeField] private DossierPanel      dossierPanel;
     [SerializeField] private TextMeshProUGUI   instructionText;
 
+    [Header("Navegação")]
+    [Tooltip("Cena para onde o botão/tecla de voltar leva.")]
+    [SerializeField] private string mainMenuScene = "MainMenu";
+
+    private const string ScreenTitle = "SELECIONE UM CASO";
+
     // ── Estado ──────────────────────────────────────────────────────────────
 
     private enum State { BoardBrowsing, DossierOpen }
@@ -45,15 +53,18 @@ public class BoardSelectionController : MonoBehaviour
     private InputAction actionLeft;
     private InputAction actionConfirm;
     private InputAction actionCancel;
+    private InputAction actionBack;     // só ESC: voltar ao menu a partir do quadro
 
     private Texture2D cursorTex;
+    private RectTransform backButtonRect;
+    private Canvas backCanvas;
 
     // ── Textos de instrução ─────────────────────────────────────────────────
 
     private const string INSTR_BROWSE  =
-        "[ ← / → ]  ou  [ MOUSE ]  Selecionar Caso     |     [ ENTER ]  ou  [ CLIQUE ]  Abrir Dossiê";
+        "[ ← / → ]  ou  [ MOUSE ]  Selecionar Caso     |     [ ENTER ]  ou  [ CLIQUE ]  Abrir Dossiê     |     [ ESC ]  Voltar ao Menu";
     private const string INSTR_DOSSIER =
-        "[ ENTER / CLIQUE ]  Iniciar Interrogatório     |     [ ESC / VOLTAR ]  Retornar ao Quadro";
+        "[ ENTER ]  ou  botão INICIAR  Iniciar Interrogatório     |     [ ESC ]  ou  VOLTAR  Retornar ao Quadro";
 
     // ── Ciclo de vida ───────────────────────────────────────────────────────
 
@@ -98,6 +109,11 @@ public class BoardSelectionController : MonoBehaviour
         actionCancel = new InputAction("Cancel", InputActionType.Button);
         actionCancel.AddBinding("<Keyboard>/escape");
         actionCancel.AddBinding("<Mouse>/rightButton");
+
+        // O botão direito fecha o dossiê, mas NÃO sai da tela: voltar ao menu é
+        // uma decisão deliberada (ESC ou botão).
+        actionBack = new InputAction("Back", InputActionType.Button);
+        actionBack.AddBinding("<Keyboard>/escape");
     }
 
     private void OnEnable()
@@ -106,6 +122,7 @@ public class BoardSelectionController : MonoBehaviour
         actionLeft?.Enable();
         actionConfirm?.Enable();
         actionCancel?.Enable();
+        actionBack?.Enable();
     }
 
     private void OnDisable()
@@ -114,6 +131,7 @@ public class BoardSelectionController : MonoBehaviour
         actionLeft?.Disable();
         actionConfirm?.Disable();
         actionCancel?.Disable();
+        actionBack?.Disable();
     }
 
     private void OnDestroy()
@@ -122,6 +140,7 @@ public class BoardSelectionController : MonoBehaviour
         actionLeft?.Dispose();
         actionConfirm?.Dispose();
         actionCancel?.Dispose();
+        actionBack?.Dispose();
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible   = true;
@@ -144,6 +163,7 @@ public class BoardSelectionController : MonoBehaviour
         }
 
         SetInstructionText(INSTR_BROWSE);
+        BuildScreenChrome();
         StartCoroutine(FadeIn());
     }
 
@@ -156,12 +176,24 @@ public class BoardSelectionController : MonoBehaviour
             case State.BoardBrowsing:
                 HandleKeyboard();
                 HandleMouseRaycast();
-                if (actionConfirm.WasPressedThisFrame()) OpenDossier();
+                if (actionBack.WasPressedThisFrame()) { GoBackToMenu(); break; }
+                // Clique no MENU tratado aqui, por posição, sem depender do
+                // EventSystem/GraphicRaycaster da cena (o Button não respondia).
+                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && PointerOverBackButton())
+                { GoBackToMenu(); break; }
+                if (ConfirmPressed()) OpenDossier();
                 break;
 
             case State.DossierOpen:
-                // clique no papel ativo → confirma
-                if (actionConfirm.WasPressedThisFrame()) ConfirmDossier();
+                // Só confirma por ENTER/ESPAÇO ou clicando no botão INICIAR; clicar
+                // em qualquer outro ponto não faz nada (antes iniciava a partida).
+                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && dossierPanel != null)
+                {
+                    Vector2 mp = Mouse.current.position.ReadValue();
+                    if (dossierPanel.IsOverConfirm(mp)) { ConfirmDossier(); break; }
+                    if (dossierPanel.IsOverBack(mp))    { CloseDossier();   break; }
+                }
+                if (KeyboardConfirmPressed()) ConfirmDossier();
                 if (actionCancel.WasPressedThisFrame())  CloseDossier();
                 break;
         }
@@ -250,8 +282,129 @@ public class BoardSelectionController : MonoBehaviour
             return;
         }
 
+        // A partida usa o caso escolhido aqui (vai no case_id de cada fala).
+        CaseSelection.CaseId = item.caseId;
+
         transitioning = true;
         StartCoroutine(FadeOutThenLoad(item.targetSceneName));
+    }
+
+    /// <summary>
+    /// Volta ao menu principal. Nada de partida existe nesta tela (ela só
+    /// escolhe o caso), então não há o que descartar; quem inicia a partida é o
+    /// ConfirmDossier — voltar nunca começa uma.
+    /// </summary>
+    public void GoBackToMenu()
+    {
+        if (transitioning) return;
+        if (!SceneExists(mainMenuScene))
+        {
+            Debug.LogWarning($"[Board] '{mainMenuScene}' não está no Build Settings.");
+            return;
+        }
+        transitioning = true;
+        StartCoroutine(FadeOutThenLoad(mainMenuScene));
+    }
+
+    /// <summary>
+    /// Confirmar por tecla ou por clique no mundo. Um clique que caiu num botão
+    /// da UI (VOLTAR, os botões do dossiê) é do botão — sem esta guarda o mesmo
+    /// clique também abria/confirmava o dossiê por baixo.
+    /// </summary>
+    private bool ConfirmPressed()
+    {
+        if (!actionConfirm.WasPressedThisFrame()) return false;
+        bool fromMouse = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+        if (fromMouse && (PointerOverBackButton() ||
+            (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())))
+            return false;
+        return true;
+    }
+
+    private static bool KeyboardConfirmPressed()
+    {
+        var kb = Keyboard.current;
+        return kb != null && (kb.enterKey.wasPressedThisFrame ||
+                              kb.numpadEnterKey.wasPressedThisFrame ||
+                              kb.spaceKey.wasPressedThisFrame);
+    }
+
+    private bool PointerOverBackButton()
+    {
+        if (backButtonRect == null || Mouse.current == null) return false;
+        Camera cam = (backCanvas != null && backCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? backCanvas.worldCamera : null;
+        return RectTransformUtility.RectangleContainsScreenPoint(
+            backButtonRect, Mouse.current.position.ReadValue(), cam);
+    }
+
+    // ── Título e botão de voltar (criados em código: a cena é gerada por Editor) ──
+
+    private void BuildScreenChrome()
+    {
+        if (instructionText == null) return;
+        var canvas = instructionText.canvas != null ? instructionText.canvas.rootCanvas : null;
+        if (canvas == null) return;
+
+        if (canvas.GetComponent<GraphicRaycaster>() == null)
+            canvas.gameObject.AddComponent<GraphicRaycaster>();
+
+        // Título
+        if (canvas.transform.Find("[TituloSelecao]") == null)
+        {
+            var go = new GameObject("[TituloSelecao]", typeof(RectTransform));
+            go.transform.SetParent(canvas.transform, false);
+            var title = go.AddComponent<TextMeshProUGUI>();
+            title.font = instructionText.font;
+            title.text = ScreenTitle;
+            title.fontSize = 64f;
+            title.fontStyle = FontStyles.Bold;
+            title.characterSpacing = 8f;
+            title.alignment = TextAlignmentOptions.Center;
+            title.color = new Color(0.93f, 0.78f, 0.42f);
+            title.raycastTarget = false;
+            var rt = title.rectTransform;
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, -36f);
+            rt.sizeDelta = new Vector2(1200f, 90f);
+        }
+
+        // Botão voltar
+        if (canvas.transform.Find("[BotaoVoltarMenu]") == null)
+        {
+            var go = new GameObject("[BotaoVoltarMenu]", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.transform.SetParent(canvas.transform, false);
+            var img = go.GetComponent<Image>();
+            img.color = new Color(0.07f, 0.06f, 0.05f, 0.85f);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(36f, -36f);
+            rt.sizeDelta = new Vector2(230f, 56f);
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0.85f, 0.65f, 0.25f, 0.7f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
+
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.onClick.AddListener(GoBackToMenu);
+            backButtonRect = rt;
+            backCanvas = canvas;
+
+            var labelGo = new GameObject("Rotulo", typeof(RectTransform));
+            labelGo.transform.SetParent(go.transform, false);
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            label.font = instructionText.font;
+            label.text = "← MENU";
+            label.fontSize = 28f;
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = new Color(0.93f, 0.90f, 0.82f);
+            label.raycastTarget = false;
+            var lrt = label.rectTransform;
+            lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+        }
     }
 
     // Chamado por BoardSelectionController.SelectCase (legado / externo)
