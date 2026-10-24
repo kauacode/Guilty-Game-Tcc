@@ -155,6 +155,12 @@ public static class GuiltyGameFlowUI
         if (scene.path != GameScenePath)
             scene = EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Single);
 
+        // Idempotente: rodar de novo SUBSTITUI o canvas. Sem isto, cada execução
+        // somava um "Flow Canvas" completo (com outro GameFlowController) — a cena
+        // chegou a ter dois: Esc abria duas pausas e o fim de jogo, duas telas.
+        foreach (var antigo in scene.GetRootGameObjects())
+            if (antigo.name == "Flow Canvas") Object.DestroyImmediate(antigo);
+
         // Canvas próprio, acima da HUD, para não encostar no Canvas existente
         var canvas = MakeCanvas("Flow Canvas", scene, out var canvasGo);
         canvas.sortingOrder = 100;
