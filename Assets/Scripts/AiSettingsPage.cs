@@ -110,6 +110,8 @@ public class AiSettingsPage : MonoBehaviour
         GameSettings.SetAiProvider(Selected.id);
         confirmingDelete = false;
         UpdateView();
+        // escolheu um modelo local já baixado: começa a carregar desde já
+        if (!Selected.requer_chave && Selected.baixado) BackendLauncher.Instance?.WarmUpChosenAi();
     }
 
     public void OnKeyEdited(string value)
@@ -216,8 +218,11 @@ public class AiSettingsPage : MonoBehaviour
 
     private static void ApplyDownload(BackendApi.ProviderInfo p, BackendApi.DownloadStatus s)
     {
+        bool acabouDeBaixar = !p.baixado && s.estado == "concluido";
         p.download = s;
         p.baixado = s.estado == "concluido";
+        // download terminou e é a IA escolhida: já deixa carregada para a partida
+        if (acabouDeBaixar && GameSettings.AiProvider == p.id) BackendLauncher.Instance?.WarmUpChosenAi();
     }
 
     private static bool IsActive(BackendApi.DownloadStatus d) =>
