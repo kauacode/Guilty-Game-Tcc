@@ -103,6 +103,13 @@ public class GameFlowController : MonoBehaviour
     public void TogglePause()
     {
         if (Ended != EndKind.None) return;   // fim de jogo não pausa
+        // Esc com o tutorial aberto fecha o tutorial, como qualquer janela. Antes
+        // a pausa abria POR BAIXO dele, invisível, e o jogador não via o menu.
+        if (TutorialOverlay.AnyOpen && !IsPaused)
+        {
+            TutorialOverlay.Current.Close();
+            return;
+        }
         SetPaused(!IsPaused);
     }
 
