@@ -220,6 +220,22 @@ public class BackendLauncher : MonoBehaviour
     {
         Status = s;
         OnStateChanged?.Invoke(s);
+        if (s == State.Ready) WarmUpChosenAi();
+    }
+
+    /// <summary>
+    /// Pede ao backend para carregar a IA local já no menu. Antes o aquecimento
+    /// só começava ao entrar na sala, e a 1ª pergunta fria do Qwen chegou a 90 s
+    /// (o limite do ApiClient). Menu + seleção de caso + tutorial dão tempo de
+    /// sobra para a carga terminar antes do primeiro depoimento.
+    /// </summary>
+    public void WarmUpChosenAi()
+    {
+        GameSettings.Load();
+        if (GameSettings.AiProvider == "gemini") return;   // nuvem: nada a carregar
+        StartCoroutine(BackendApi.WarmUp(GameSettings.AiProvider,
+            r => { if (!r.ok) Debug.Log($"[Backend] Aquecimento adiado: {r.erro}"); },
+            e => Debug.LogWarning($"[Backend] Aquecimento falhou: {e}")));
     }
 
     private void Fail(string message)
