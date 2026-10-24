@@ -72,9 +72,44 @@ public static class GameSettings
     {
         Load();
         ApplyAudio();
+        ApplyAutoQuality();
         // resolução não é reaplicada no boot de propósito: no Editor isso não faz
         // nada e numa build a Unity já restaura a última resolução usada. Reaplicar
         // aqui causaria um flicker de janela na abertura.
+    }
+
+    // ───────────────────────────── qualidade automática ─────────────────────────────
+
+    /// <summary>
+    /// Escolhe sozinho o perfil gráfico leve ("Mobile": render a 80%, uma
+    /// cascata, sem SSAO, sombras duras) em placas de vídeo fracas — a GPU
+    /// integrada de notebook é o caso mais comum entre quem vai jogar. Sem tela
+    /// nova: a detecção roda a cada abertura, porque o hardware não muda.
+    /// </summary>
+    private static void ApplyAutoQuality()
+    {
+#if !UNITY_EDITOR
+        bool weak = IsWeakGpu(SystemInfo.graphicsDeviceName, SystemInfo.graphicsMemorySize);
+        string target = weak ? "Mobile" : "PC";
+        int index = System.Array.IndexOf(QualitySettings.names, target);
+        if (index >= 0 && QualitySettings.GetQualityLevel() != index)
+            QualitySettings.SetQualityLevel(index, applyExpensiveChanges: true);
+        Debug.Log($"[Qualidade] GPU '{SystemInfo.graphicsDeviceName}' ({SystemInfo.graphicsMemorySize} MB) -> perfil {target}");
+#endif
+    }
+
+    /// <summary>
+    /// GPU integrada ou com pouca memória. Integradas se denunciam pelo nome
+    /// (Intel UHD/HD/Iris, AMD "Radeon(TM) Graphics"/Vega das APUs) e, em geral,
+    /// por reportar pouca VRAM.
+    /// </summary>
+    public static bool IsWeakGpu(string deviceName, int memoryMb)
+    {
+        string n = (deviceName ?? "").ToLowerInvariant();
+        bool integrated = (n.Contains("intel") && !n.Contains("arc")) ||   // Arc é dedicada
+                          n.Contains("radeon(tm) graphics") || n.Contains("radeon graphics") ||
+                          n.Contains("vega") || n.Contains("microsoft basic render");
+        return integrated || (memoryMb > 0 && memoryMb < 3000);
     }
 
     public static void Load()
