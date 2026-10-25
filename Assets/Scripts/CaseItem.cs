@@ -21,8 +21,25 @@ public class CaseItem : MonoBehaviour
 
     // Propriedades de conveniência para retrocompatibilidade
     public string targetSceneName => caseData?.targetSceneName ?? "";
-    public bool   isLocked        => caseData?.isLocked ?? false;
+    // Estado EFETIVO: o da cena até o quadro aplicar o progresso (SetEffectiveLock).
+    public bool   isLocked        => effectiveLock ?? (caseData?.isLocked ?? false);
     public string caseId          => caseData?.caseId ?? "";
+
+    private const string LockedBadge   = "DOSSIÊ LACRADO";
+    private const string UnlockedBadge = "AGUARDANDO INTERROGATÓRIO";
+    private bool? effectiveLock;
+
+    /// <summary>
+    /// Aplica o cadeado calculado pelo CaseProgress. Um dossiê aberto pelo
+    /// progresso não pode continuar com o selo de lacrado no painel. A troca é só
+    /// em memória: a cena guardada continua com o estado "bloqueado por padrão".
+    /// </summary>
+    public void SetEffectiveLock(bool locked)
+    {
+        effectiveLock = locked;
+        if (!locked && caseData != null && caseData.statusBadge == LockedBadge)
+            caseData.statusBadge = UnlockedBadge;
+    }
 
     [Header("Animação de foco")]
     [SerializeField] private float forwardOffset = 0.045f;

@@ -1344,11 +1344,13 @@ MonoBehaviour:
     caseId: CASO 03
     caseTitle: "O Inc\xEAndio da 5\xAA Rua"
     statusBadge: "DOSSI\xCA LACRADO"
-    caseDescription: "Inc\xEAndio criminoso que destruiu tr\xEAs andares de um edif\xEDcio
-      comercial. Tr\xEAs v\xEDtimas fatais. An\xE1lise forense indica uso de acelerador."
+    caseDescription: "Um inc\xEAndio criminoso destruiu tr\xEAs andares do Edif\xEDcio Aurora, na 5\xAA Rua, e matou tr\xEAs pessoas. A per\xEDcia confirmou o uso de acelerante, e o alarme disparou \xE0s 22h52. Voc\xEA \xE9 Heitor Vasconcelos, relojoeiro e s\xEDndico do pr\xE9dio, que voltou ao edif\xEDcio vinte minutos antes do fogo. Conven\xE7a o detetive de que \xE9 inocente."
     suspectPhoto: {fileID: 0}
     targetSceneName: SampleScene
     isLocked: 1
+    playerName: "Heitor Vasconcelos"
+    openingLine: "Detetive Marcos Silva est\xE1 esperando seu depoimento.\n\nPor que voc\xEA voltou ao Edif\xEDcio Aurora \xE0s 22h31 da noite de 18 de outubro, vinte minutos antes do inc\xEAndio?"
+    playerIntro: "Voc\xEA \xE9 <b>Heitor Vasconcelos</b>, relojoeiro e s\xEDndico do Edif\xEDcio Aurora e suspeito do inc\xEAndio que matou tr\xEAs pessoas na 5\xAA Rua."
   forwardOffset: 0.045
   animSpeed: 7
   glowColor: {r: 1, g: 0.75, b: 0.25, a: 1}
@@ -1397,12 +1399,13 @@ MonoBehaviour:
     caseId: CASO 02
     caseTitle: A Mulher Sem Nome
     statusBadge: "AGUARDANDO INTERROGAT\xD3RIO"
-    caseDescription: "V\xEDtima encontrada sem identifica\xE7\xE3o no porto. Identidade
-      ainda n\xE3o confirmada. Testemunhas relatam ter visto uma figura encapuzada
-      na noite do crime."
+    caseDescription: "Uma mulher sem identifica\xE7\xE3o foi retirada da \xE1gua ao lado do Cais 4 do Porto de Santa Luzia. O laudo fixa a morte entre 02h00 e 03h00, e uma c\xE2mera filmou uma figura encapuzada ao lado dela. Voc\xEA \xE9 Caio Brand\xE3o, o conferente do turno da noite que conversou com a v\xEDtima horas antes e ficou quase uma hora sem responder ao r\xE1dio. Conven\xE7a o detetive de que \xE9 inocente."
     suspectPhoto: {fileID: 0}
     targetSceneName: SampleScene
     isLocked: 1
+    playerName: "Caio Brand\xE3o"
+    openingLine: "Detetive Marcos Silva est\xE1 esperando seu depoimento.\n\nPor que o seu r\xE1dio ficou mudo por quase uma hora na madrugada de 3 de agosto?"
+    playerIntro: "Voc\xEA \xE9 <b>Caio Brand\xE3o</b>, conferente de carga do turno da noite no Porto de Santa Luzia e suspeito da morte de uma mulher n\xE3o identificada no Cais 4."
   forwardOffset: 0.045
   animSpeed: 7
   glowColor: {r: 1, g: 0.75, b: 0.25, a: 1}

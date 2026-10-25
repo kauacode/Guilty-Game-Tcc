@@ -22,6 +22,10 @@ public class UIController : MonoBehaviour
         "Detetive Marcos Silva está esperando seu depoimento.\n\n" +
         "Onde você estava na noite do dia 14 de março?";
 
+    // A do caso escolhido; o campo acima é a do CASO 01 (cartão sem openingLine).
+    private string OpeningLine =>
+        string.IsNullOrEmpty(CaseSelection.OpeningLine) ? openingLine : CaseSelection.OpeningLine;
+
     [Header("Elementos de Output")]
     [SerializeField] private TMP_Text detectiveText;
     [SerializeField] private TMP_Text statusText;
@@ -85,7 +89,7 @@ public class UIController : MonoBehaviour
 
         // Estado inicial da UI
         SetLoadingState(false);
-        detectiveText.text = openingLine;
+        detectiveText.text = OpeningLine;
         ScrollDetectiveTextToTop();
         UpdateStatusText();
 
@@ -112,7 +116,7 @@ public class UIController : MonoBehaviour
             r =>
             {
                 if (r.ok || waitingClock != null) return;   // não atropela uma resposta em andamento
-                detectiveText.text = $"{openingLine}\n\n<color=#C88A29>[Aviso] {r.erro}</color>";
+                detectiveText.text = $"{OpeningLine}\n\n<color=#C88A29>[Aviso] {r.erro}</color>";
                 ScrollDetectiveTextToTop();
             },
             e => Debug.LogWarning($"[UIController] Aquecimento da IA falhou: {e}")));
@@ -123,7 +127,7 @@ public class UIController : MonoBehaviour
     {
         if (GameManager.Instance != null) GameManager.Instance.ResetGame();
 
-        detectiveText.text = openingLine;
+        detectiveText.text = OpeningLine;
         ScrollDetectiveTextToTop();
         playerInputField.text = "";
         sendButton.interactable = true;

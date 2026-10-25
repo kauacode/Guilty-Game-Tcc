@@ -29,7 +29,8 @@ public class GameManager : MonoBehaviour
     /// suspeito do caso, então o nome amigável é o do personagem.
     /// </summary>
     public const string DefaultPlayerName = "Daniel Reis";
-    public string PlayerDisplayName => DefaultPlayerName;
+    public string PlayerDisplayName =>
+        string.IsNullOrEmpty(CaseSelection.PlayerName) ? DefaultPlayerName : CaseSelection.PlayerName;
 
     // Eventos de estado do jogo
     public event Action<int> OnSuspicionChanged;
