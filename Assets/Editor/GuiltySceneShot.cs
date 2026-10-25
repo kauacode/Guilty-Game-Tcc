@@ -9,32 +9,11 @@ using UnityEngine;
 ///
 /// Rodar por: menu Guilty > Piloto - Screenshot da Cena.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo tirava o
+// screenshot sozinho ao abrir o projeto.
 public static class GuiltySceneShot
 {
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_sceneshot_done");
-
-    static GuiltySceneShot()
-    {
-        if (File.Exists(MarkerPath)) return;
-        _frames = 0;
-        EditorApplication.update -= Wait;
-        EditorApplication.update += Wait;
-    }
-
-    private static int _frames;
-
-    private static void Wait()
-    {
-        if (File.Exists(MarkerPath)) { EditorApplication.update -= Wait; return; }
-        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        if (++_frames < 150) return;   // deixa a integração da cena terminar primeiro
-        EditorApplication.update -= Wait;
-        File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-        Run();
-    }
-
     [MenuItem("Guilty/Piloto - Screenshot da Cena")]
     public static void Run()
     {

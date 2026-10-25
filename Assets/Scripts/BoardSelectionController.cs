@@ -43,6 +43,7 @@ public class BoardSelectionController : MonoBehaviour
     private enum State { BoardBrowsing, DossierOpen }
     private State currentState = State.BoardBrowsing;
 
+    private string[] caseIds = new string[0];
     private int  currentIndex;
     private bool transitioning;
     private bool keyboardPriority;
@@ -65,6 +66,8 @@ public class BoardSelectionController : MonoBehaviour
         "[ ← / → ]  ou  [ MOUSE ]  Selecionar Caso     |     [ ENTER ]  ou  [ CLIQUE ]  Abrir Dossiê     |     [ ESC ]  Voltar ao Menu";
     private const string INSTR_DOSSIER =
         "[ ENTER ]  ou  botão INICIAR  Iniciar Interrogatório     |     [ ESC ]  ou  VOLTAR  Retornar ao Quadro";
+    private const string INSTR_DOSSIER_LOCKED =
+        "Dossiê bloqueado     |     [ ESC ]  ou  VOLTAR  Retornar ao Quadro";
 
     // ── Ciclo de vida ───────────────────────────────────────────────────────
 
@@ -90,6 +93,12 @@ public class BoardSelectionController : MonoBehaviour
 
         System.Array.Sort(cases,
             (a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+
+        // Desbloqueio progressivo: vencer um caso abre o seguinte. A ordem é a
+        // dos caseId, não a posição no quadro.
+        caseIds = System.Array.ConvertAll(cases, c => c.caseId);
+        foreach (var c in cases)
+            c.SetEffectiveLock(CaseProgress.IsLocked(c.caseId, c.caseData != null && c.caseData.isLocked, caseIds));
 
         // Input Actions
         actionRight = new InputAction("Right", InputActionType.Button);
@@ -252,16 +261,20 @@ public class BoardSelectionController : MonoBehaviour
     private void OpenDossier()
     {
         var item = cases[currentIndex];
-        if (item.isLocked)
-        {
-            Debug.Log($"[Board] Caso {item.caseId} bloqueado.");
-            return;
-        }
 
+        // Bloqueado também abre, só para leitura: o jogador vê o que vem pela
+        // frente e o painel diz qual caso falta vencer. Iniciar segue barrado
+        // no ConfirmDossier.
         currentState = State.DossierOpen;
         UiAudio.Play(UiAudio.Som.DossieAbrir);
-        dossierPanel?.Show(item.caseData);
-        SetInstructionText(INSTR_DOSSIER);
+        dossierPanel?.Show(item.caseData, item.isLocked ? LockedReason(item) : null);
+        SetInstructionText(item.isLocked ? INSTR_DOSSIER_LOCKED : INSTR_DOSSIER);
+    }
+
+    private string LockedReason(CaseItem item)
+    {
+        string previous = CaseProgress.PreviousCaseId(item.caseId, caseIds);
+        return previous != null ? $"Complete o {previous} para desbloquear" : "Dossiê indisponível";
     }
 
     private void CloseDossier()
@@ -279,6 +292,13 @@ public class BoardSelectionController : MonoBehaviour
         if (transitioning) return;
 
         var item = cases[currentIndex];
+        // ENTER/ESPAÇO e o clique por posição chegam aqui sem passar pelo botão
+        // (que só fica desabilitado): a trava de verdade é esta.
+        if (item.isLocked)
+        {
+            Debug.Log($"[Board] Caso {item.caseId} bloqueado.");
+            return;
+        }
         if (!SceneExists(item.targetSceneName))
         {
             Debug.LogWarning($"[Board] '{item.targetSceneName}' não está no Build Settings.");
@@ -287,6 +307,10 @@ public class BoardSelectionController : MonoBehaviour
 
         // A partida usa o caso escolhido aqui (vai no case_id de cada fala).
         CaseSelection.CaseId = item.caseId;
+        // Sem isto os casos 02/03 herdavam o nome e a 1a pergunta do caso 01.
+        CaseSelection.PlayerName  = item.caseData?.playerName ?? "";
+        CaseSelection.OpeningLine = item.caseData?.openingLine ?? "";
+        CaseSelection.PlayerIntro = item.caseData?.playerIntro ?? "";
 
         UiAudio.Play(UiAudio.Som.IniciarCaso);
         transitioning = true;

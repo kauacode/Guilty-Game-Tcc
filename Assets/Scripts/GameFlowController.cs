@@ -164,7 +164,13 @@ public class GameFlowController : MonoBehaviour
     private void OnGameOver()
     {
         var gm = GameManager.Instance;
-        EndRun(gm != null && gm.Result == "vitoria" ? EndKind.Victory : EndKind.Defeat);
+        bool victory = gm != null && gm.Result == "vitoria";
+        // Registra o caso resolvido aqui, e não no EndRun: o EndRun também é
+        // chamado por ferramentas de validação sem backend, e só a vitória
+        // decidida pelo backend pode desbloquear o próximo caso. O Result ainda
+        // está preenchido (só o ResetGame o limpa).
+        if (victory) CaseProgress.MarkSolved(CaseSelection.CaseId);
+        EndRun(victory ? EndKind.Victory : EndKind.Defeat);
     }
 
     /// <summary>

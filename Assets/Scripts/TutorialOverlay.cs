@@ -203,12 +203,18 @@ public class TutorialOverlay : MonoBehaviour
         open = false;
     }
 
+    // Apresentação do CASO 01. Os outros casos trazem a sua (CaseInfo.playerIntro):
+    // com o texto fixo, todo caso dizia que o jogador era o Daniel Reis.
+    private const string DefaultPlayerIntro =
+        "Você é <b>Daniel Reis</b>, operador de impressão da Gráfica Bandeirantes e suspeito da morte de " +
+        "Otávio Lisboa.";
+
     private static string BodyText()
     {
         string h(string s) => $"<color=#D9A640><b>{s}</b></color>";
+        string intro = string.IsNullOrEmpty(CaseSelection.PlayerIntro) ? DefaultPlayerIntro : CaseSelection.PlayerIntro;
         return
-            $"Você é <b>Daniel Reis</b>, operador de impressão da Gráfica Bandeirantes e suspeito da morte de " +
-            $"Otávio Lisboa. Quem conduz o interrogatório é o detetive, controlado por IA.\n\n" +
+            $"{intro} Quem conduz o interrogatório é o detetive, controlado por IA.\n\n" +
 
             $"{h("OBJETIVO")}\n" +
             $"Sustente o seu depoimento sem se contradizer e mantenha a <b>suspeita</b> baixa até o detetive " +

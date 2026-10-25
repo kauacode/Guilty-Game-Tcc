@@ -16,29 +16,15 @@ using static GuiltyNoirUI;
 ///
 /// Rodar por: menu Guilty > UI - Montar Tela de Configurações.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo rodava este
+// script ao abrir e regravava o PF_SettingsPanel com a versão antiga, sem a
+// página Detetive (IA) — que hoje é montada pelo GuiltyAiSettingsUI.
 public static class GuiltySettingsUI
 {
     private const string MenuScene  = "Assets/Scenes/MainMenu.unity";
     private const string PrefabDir  = "Assets/Prefabs/UI";
     private const string PrefabPath = PrefabDir + "/PF_SettingsPanel.prefab";
-
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_settings_done");
-
-    static GuiltySettingsUI()
-    {
-        if (File.Exists(MarkerPath)) return;
-        EditorApplication.delayCall += () =>
-        {
-            if (File.Exists(MarkerPath)) return;
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(MenuScene) == null) return;
-            File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-            try { Run(); }
-            catch (System.Exception e) { Debug.LogError("[Settings] auto-setup falhou: " + e); }
-        };
-    }
 
     [MenuItem("Guilty/UI - Montar Tela de Configurações")]
     public static void Run()

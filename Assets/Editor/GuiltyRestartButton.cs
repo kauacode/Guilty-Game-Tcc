@@ -17,29 +17,15 @@ using UnityEngine.UI;
 ///
 /// Rodar por: menu Guilty > UI - Criar Botão de Reiniciar.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo rodava este
+// script ao abrir e regravava a SampleScene por cima de edições mais novas.
 public static class GuiltyRestartButton
 {
     private const string ScenePath  = "Assets/Scenes/SampleScene.unity";
     private const string SendName   = "Send Button";
     private const string RestartName = "Restart Button";
     private const string Label      = "Reiniciar investigação";
-
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_restart_btn_done");
-
-    static GuiltyRestartButton()
-    {
-        if (File.Exists(MarkerPath)) return;
-        EditorApplication.delayCall += () =>
-        {
-            if (File.Exists(MarkerPath)) return;
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-            File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-            try { Run(); }
-            catch (System.Exception e) { Debug.LogError("[UI] auto-setup do botão falhou: " + e); }
-        };
-    }
 
     [MenuItem("Guilty/UI - Criar Botão de Reiniciar")]
     public static void Run()

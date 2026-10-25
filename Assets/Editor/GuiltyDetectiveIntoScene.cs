@@ -17,45 +17,13 @@ using UnityEngine;
 ///
 /// Rodar por: menu Guilty > Piloto - Colocar Detetive Animado na SampleScene.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo rodava este
+// script ao abrir e regravava a SampleScene por cima de edições mais novas.
 public static class GuiltyDetectiveIntoScene
 {
     private const string ScenePath  = "Assets/Scenes/SampleScene.unity";
     private const string PrefabPath = "Assets/Prefabs/Characters/PF_Detective.prefab";
-
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_detective_in_scene_done");
-
-    static GuiltyDetectiveIntoScene()
-    {
-        if (File.Exists(MarkerPath)) return;
-        _frames = 0;
-        EditorApplication.update -= WaitThenRun;
-        EditorApplication.update += WaitThenRun;
-    }
-
-    private static int _frames;
-
-    private static void WaitThenRun()
-    {
-        if (File.Exists(MarkerPath)) { EditorApplication.update -= WaitThenRun; return; }
-        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        if (++_frames < 90) return;
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) == null) return;
-
-        var active = EditorSceneManager.GetActiveScene();
-        if (active.isDirty)
-        {
-            EditorApplication.update -= WaitThenRun;
-            Debug.Log("[Piloto] SampleScene tem alterações não salvas — integração automática pulada. " +
-                      "Use Guilty > Piloto - Colocar Detetive Animado na SampleScene.");
-            return;
-        }
-
-        EditorApplication.update -= WaitThenRun;
-        File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-        Run();
-    }
 
     [MenuItem("Guilty/Piloto - Colocar Detetive Animado na SampleScene")]
     public static void Run()

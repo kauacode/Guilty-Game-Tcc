@@ -58,12 +58,30 @@ public class DossierPanel : MonoBehaviour
         backButton?.onClick.AddListener(() => OnBackRequested?.Invoke());
     }
 
-    public void Show(CaseInfo info)
+    private const string LockedBadge = "DOSSIÊ LACRADO";
+
+    private TMP_Text confirmLabel;
+    private string   confirmLabelText;
+    private Color    confirmLabelColor;
+
+    public void Show(CaseInfo info) => Show(info, null);
+
+    /// <summary>
+    /// <paramref name="lockedReason"/> != null: caso bloqueado. O dossiê abre
+    /// para leitura, mas o INICIAR fica desabilitado e diz o que falta. Quem
+    /// impede de fato a partida é o BoardSelectionController (ENTER e o clique
+    /// por posição não passam pelo onClick do botão).
+    /// </summary>
+    public void Show(CaseInfo info, string lockedReason)
     {
         if (info == null) return;
+        bool locked = lockedReason != null;
 
         if (titleText)       titleText.text       = info.caseTitle;
-        if (statusText)      statusText.text       = $"[ {info.statusBadge} ]";
+        // O selo da cena de um caso ainda bloqueado pode dizer "AGUARDANDO
+        // INTERROGATÓRIO"; enquanto não abrir, ele é lacrado.
+        if (statusText)      statusText.text       = $"[ {(locked ? LockedBadge : info.statusBadge)} ]";
+        ApplyConfirmLock(lockedReason);
         if (descriptionText) descriptionText.text  = info.caseDescription;
         if (suspectImage)
         {
@@ -76,6 +94,29 @@ public class DossierPanel : MonoBehaviour
         IsVisible = true;
         StopAllCoroutines();
         StartCoroutine(Animate(show: true));
+    }
+
+    private void ApplyConfirmLock(string lockedReason)
+    {
+        if (confirmButton == null) return;
+        if (confirmLabel == null)
+        {
+            // Guarda o texto e a cor originais para voltar a eles quando o
+            // próximo dossiê aberto for de um caso disponível.
+            confirmLabel = confirmButton.GetComponentInChildren<TMP_Text>(true);
+            if (confirmLabel != null)
+            {
+                confirmLabelText  = confirmLabel.text;
+                confirmLabelColor = confirmLabel.color;
+            }
+        }
+
+        bool locked = lockedReason != null;
+        confirmButton.interactable = !locked;
+        if (confirmLabel == null) return;
+        confirmLabel.text  = locked ? $"BLOQUEADO\n<size=80%>{lockedReason}</size>" : confirmLabelText;
+        confirmLabel.color = locked ? new Color(confirmLabelColor.r, confirmLabelColor.g, confirmLabelColor.b, 0.6f)
+                                    : confirmLabelColor;
     }
 
     public void Hide()
