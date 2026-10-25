@@ -4,9 +4,9 @@ Todos os arquivos desta pasta vêm de pacotes da Kenney (www.kenney.nl),
 licença Creative Commons Zero (CC0, domínio público):
 http://creativecommons.org/publicdomain/zero/1.0/
 
-  ui_hover.ogg           Interface Sounds 1.0 — tick_002.ogg
-  ui_clique.ogg          Interface Sounds 1.0 — click_002.ogg
-  ui_opcao.ogg           Interface Sounds 1.0 — switch_002.ogg
+  ui_hover.ogg           Interface Sounds 1.0 — drop_003.ogg
+  ui_clique.ogg          Interface Sounds 1.0 — select_001.ogg
+  ui_opcao.ogg           Interface Sounds 1.0 — select_002.ogg
   prancheta_abrir.ogg    RPG Audio 1.0 — bookFlip1.ogg
   prancheta_fechar.ogg   RPG Audio 1.0 — bookFlip2.ogg
   depoimento_enviar.ogg  RPG Audio 1.0 — bookPlace1.ogg

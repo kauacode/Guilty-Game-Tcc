@@ -27,9 +27,9 @@ public class UiAudio : MonoBehaviour
     // bem mais altos que o clima do jogo pede; o hover é o mais discreto)
     private static readonly (Som som, string arquivo, float volume)[] Tabela =
     {
-        (Som.Hover,           "ui_hover",          0.20f),
-        (Som.Clique,          "ui_clique",         0.45f),
-        (Som.Opcao,           "ui_opcao",          0.40f),
+        (Som.Hover,           "ui_hover",          0.25f),   // "toc" grave e abafado
+        (Som.Clique,          "ui_clique",         0.40f),   // seco e curto (21 ms)
+        (Som.Opcao,           "ui_opcao",          0.40f),   // mesma família, um pouco mais grave
         (Som.PranchetaAbrir,  "prancheta_abrir",   0.55f),
         (Som.PranchetaFechar, "prancheta_fechar",  0.45f),
         (Som.Enviar,          "depoimento_enviar", 0.60f),
