@@ -7677,7 +7677,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6731700256779284f918f425cff97d0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraLook
-  mouseSensitivity: 60
+  mouseSensitivity: 0.12
   smoothTime: 0.08
   pitchMin: -45
   pitchMax: 50
