@@ -36,29 +36,9 @@ public static class GuiltyCharacterSetup
     private const string ClipName       = "Detective_Idle_FingerTap";
     private const string TriggerParam   = "FingerTap";
 
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_pilot_setup_done");
-
-    /// <summary>
-    /// Roda o setup UMA vez sozinho, no primeiro domain reload depois que o FBX
-    /// existir. Existe só para o piloto não depender de você achar o menu.
-    /// Apague o arquivo .guilty_pilot_setup_done na raiz do projeto para permitir
-    /// que rode de novo, ou use o menu, que roda sempre.
-    /// </summary>
-    [InitializeOnLoadMethod]
-    private static void AutoRunOnce()
-    {
-        if (File.Exists(MarkerPath)) return;
-
-        EditorApplication.delayCall += () =>
-        {
-            if (File.Exists(MarkerPath)) return;
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath) == null) return; // FBX ainda não importou
-            File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-            try { Run(true); }
-            catch (System.Exception e) { Debug.LogError("[Piloto Detetive] auto-setup falhou: " + e); }
-        };
-    }
+    // Só pelo menu. O auto-run (InitializeOnLoadMethod + marcador .guilty_*_done)
+    // foi tirado: o marcador não vai para o Git, então todo clone novo rodava o
+    // setup ao abrir e regravava controller, prefab e cena de teste.
 
     [MenuItem("Guilty/Piloto - Setup Animação Detetive")]
     public static void RunFromMenu() { Run(false); }

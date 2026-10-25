@@ -25,39 +25,11 @@ using UnityEngine.Rendering.Universal;
 ///
 /// Rodar por: menu Guilty > Noir - Aplicar Filtro na Cena Aberta.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo rodava este
+// script ao abrir e regravava a cena aberta e o perfil noir.
 public static class GuiltyNoirGrade
 {
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_noir_done");
-
-    static GuiltyNoirGrade()
-    {
-        if (File.Exists(MarkerPath)) return;
-        _frames = 0;
-        EditorApplication.update -= AutoOnce;
-        EditorApplication.update += AutoOnce;
-    }
-
-    private static int _frames;
-
-    private static void AutoOnce()
-    {
-        if (File.Exists(MarkerPath)) { EditorApplication.update -= AutoOnce; return; }
-        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        if (++_frames < 60) return;
-        var active = EditorSceneManager.GetActiveScene();
-        if (active.isDirty)
-        {
-            EditorApplication.update -= AutoOnce;
-            Debug.Log("[Noir] cena com alterações não salvas — use Guilty > Noir - Aplicar Filtro na Cena Aberta.");
-            return;
-        }
-        EditorApplication.update -= AutoOnce;
-        File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-        Run();
-    }
-
     private const string ProfilePath = "Assets/Settings/NoirVolumeProfile.asset";
     private const string PrefabPath  = "Assets/Prefabs/PF_NoirVolume.prefab";
     private const string VolumeName  = "NoirVolume";

@@ -17,7 +17,9 @@ using UnityEngine.UI;
 ///
 /// Rodar por: menu Guilty > Fluxo - Screenshots das Telas.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo abria as cenas
+// e tirava screenshots sozinho ao abrir o projeto.
 public static class GuiltyFlowShots
 {
     private const string GameScene = "Assets/Scenes/SampleScene.unity";
@@ -26,23 +28,6 @@ public static class GuiltyFlowShots
 
     private static string OutDir =>
         Path.Combine(Directory.GetParent(Application.dataPath).FullName, "PilotScreens");
-
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_flowshots_done");
-
-    static GuiltyFlowShots()
-    {
-        if (File.Exists(MarkerPath)) return;
-        EditorApplication.delayCall += () =>
-        {
-            if (File.Exists(MarkerPath)) return;
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(MenuScene) == null) return;
-            File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-            try { Run(); }
-            catch (System.Exception e) { Debug.LogError("[Shots] falhou: " + e); }
-        };
-    }
 
     [MenuItem("Guilty/Fluxo - Screenshots das Telas")]
     public static void Run()

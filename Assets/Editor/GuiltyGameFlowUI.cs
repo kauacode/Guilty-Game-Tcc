@@ -23,27 +23,14 @@ using static GuiltyNoirUI;
 ///
 /// Rodar por: menu Guilty > Fluxo - Montar Menu, Pause e Fim de Jogo.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo rodava este
+// script ao abrir e regravava MainMenu e SampleScene por cima de edições mais
+// novas (foi assim que a tela de fim perdeu o REINICIAR INTERROGATÓRIO).
 public static class GuiltyGameFlowUI
 {
     private const string GameScenePath = "Assets/Scenes/SampleScene.unity";
     private const string MenuScenePath = "Assets/Scenes/MainMenu.unity";
-
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_gameflow_done");
-
-    static GuiltyGameFlowUI()
-    {
-        if (File.Exists(MarkerPath)) return;
-        EditorApplication.delayCall += () =>
-        {
-            if (File.Exists(MarkerPath)) return;
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-            File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-            try { Run(); }
-            catch (System.Exception e) { Debug.LogError("[Fluxo] auto-setup falhou: " + e); }
-        };
-    }
 
     [MenuItem("Guilty/Fluxo - Montar Menu, Pause e Fim de Jogo")]
     public static void Run()

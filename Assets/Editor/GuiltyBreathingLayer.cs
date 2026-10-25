@@ -24,33 +24,15 @@ using UnityEngine;
 ///
 /// Rodar por: menu Guilty > Respiração - Criar Layer Aditiva.
 /// </summary>
-[InitializeOnLoad]
+// Só pelo menu. O auto-run (InitializeOnLoad + marcador .guilty_*_done) foi
+// tirado: o marcador não vai para o Git, então todo clone novo rodava este
+// script ao abrir e regravava o AC_Detective por cima de edições mais novas.
 public static class GuiltyBreathingLayer
 {
     private const string ControllerPath = "Assets/Animation/Detective/AC_Detective.controller";
     private const string BreathFbx      = "Assets/Models/Characters/SK_Detective@Detective_Idle_Breathing.fbx";
     private const string LayerName      = "Breathing";
     private const string StateName      = "Breathing";
-
-    private static string MarkerPath =>
-        Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".guilty_breathing_done");
-
-    static GuiltyBreathingLayer()
-    {
-        if (File.Exists(MarkerPath)) return;
-        // delayCall em vez de EditorApplication.update: o update quase não tica
-        // enquanto o editor está sem foco, e o auto-run ficava pendurado.
-        EditorApplication.delayCall += Auto;
-    }
-
-    private static void Auto()
-    {
-        if (File.Exists(MarkerPath)) return;
-        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        File.WriteAllText(MarkerPath, System.DateTime.Now.ToString("o"));
-        try { Run(); }
-        catch (System.Exception e) { Debug.LogError("[Respiração] auto-run falhou: " + e); }
-    }
 
     [MenuItem("Guilty/Respiração - Criar Layer Aditiva")]
     public static void Run()
