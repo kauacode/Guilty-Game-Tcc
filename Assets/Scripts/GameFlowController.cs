@@ -179,6 +179,11 @@ public class GameFlowController : MonoBehaviour
         if (IsPaused) SetPaused(false);
         if (interrogationToggle != null) interrogationToggle.enabled = false;
 
+        // A partida acabou: a câmera para de seguir o mouse. Com o cursor livre
+        // para clicar nos botões, ela continuava girando por trás da tela de fim.
+        foreach (var look in FindObjectsByType<PlayerCameraLook>(FindObjectsSortMode.None))
+            look.enabled = false;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
