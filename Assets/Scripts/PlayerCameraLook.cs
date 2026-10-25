@@ -15,8 +15,9 @@ using UnityEngine.InputSystem;
 public class PlayerCameraLook : MonoBehaviour
 {
     [Header("Sensibilidade")]
-    [Tooltip("Velocidade bruta de resposta ao mouse. Valores entre 40-100 para uso sentado.")]
-    [SerializeField, Min(0f)] private float mouseSensitivity = 60f;
+    [Tooltip("Graus de giro por pixel de movimento do mouse (independe do FPS). " +
+             "0.12 = calmo, para uso sentado; 0.2 = rápido.")]
+    [SerializeField, Min(0f)] private float mouseSensitivity = 0.12f;
 
     [Header("Peso / Inércia")]
     [Tooltip("Segundos para a câmera alcançar o alvo. 0.05 = rápido; 0.15 = cabeça pesada cinematográfica.")]
@@ -95,8 +96,12 @@ public class PlayerCameraLook : MonoBehaviour
     {
         Vector2 delta = _lookAction.ReadValue<Vector2>();
 
-        _targetYaw   += delta.x * mouseSensitivity * Time.deltaTime;
-        _targetPitch -= delta.y * mouseSensitivity * Time.deltaTime;
+        // Sem Time.deltaTime: o delta do mouse JÁ é a distância percorrida no
+        // quadro. Multiplicar pelo tempo do quadro deixava a sensibilidade
+        // presa ao FPS — com o VSync (60 FPS) a câmera ficou ~6x mais sensível
+        // do que a 350 FPS. Agora: graus por pixel, igual em qualquer máquina.
+        _targetYaw   += delta.x * mouseSensitivity;
+        _targetPitch -= delta.y * mouseSensitivity;
 
         // Clamp no alvo: respeita limites antes mesmo da câmera chegar lá
         _targetYaw   = Mathf.Clamp(_targetYaw,   yawMin,   yawMax);

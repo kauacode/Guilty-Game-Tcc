@@ -244,6 +244,7 @@ public class BoardSelectionController : MonoBehaviour
         cases[currentIndex].SetFocused(false);
         currentIndex = index;
         cases[currentIndex].SetFocused(true);
+        UiAudio.Play(UiAudio.Som.Hover);
     }
 
     // ── Estado: abrir / fechar dossiê ────────────────────────────────────────
@@ -258,6 +259,7 @@ public class BoardSelectionController : MonoBehaviour
         }
 
         currentState = State.DossierOpen;
+        UiAudio.Play(UiAudio.Som.DossieAbrir);
         dossierPanel?.Show(item.caseData);
         SetInstructionText(INSTR_DOSSIER);
     }
@@ -265,6 +267,7 @@ public class BoardSelectionController : MonoBehaviour
     private void CloseDossier()
     {
         currentState = State.BoardBrowsing;
+        UiAudio.Play(UiAudio.Som.DossieFechar);
         dossierPanel?.Hide();
         SetInstructionText(INSTR_BROWSE);
     }
@@ -285,6 +288,7 @@ public class BoardSelectionController : MonoBehaviour
         // A partida usa o caso escolhido aqui (vai no case_id de cada fala).
         CaseSelection.CaseId = item.caseId;
 
+        UiAudio.Play(UiAudio.Som.IniciarCaso);
         transitioning = true;
         StartCoroutine(FadeOutThenLoad(item.targetSceneName));
     }
